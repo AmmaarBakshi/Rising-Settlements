@@ -1,6 +1,7 @@
 package com.risingsettlements.village;
 
 import com.mojang.serialization.Codec;
+import com.risingsettlements.config.RSConfig;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -42,6 +43,9 @@ public final class Settlement {
 	/** Work in progress that is not saved (see {@link SettlementRuntime}). */
 	private final SettlementRuntime runtime = new SettlementRuntime();
 
+	/** Resources, current project and everything built so far. */
+	private final GrowthState growth = new GrowthState(this);
+
 	private Settlement(UUID id, String name, BlockPos bell, BoundingBox bounds, VillageStyle style, long foundedAt,
 					   Blueprint blueprint, LongOpenHashSet playerBlocks) {
 		this.id = id;
@@ -57,6 +61,7 @@ public final class Settlement {
 	public static Settlement create(String name, BlockPos bell, BoundingBox bounds, VillageStyle style, long gameTime) {
 		Settlement settlement = new Settlement(UUID.randomUUID(), name, bell, bounds, style, gameTime,
 				new Blueprint(), new LongOpenHashSet());
+		settlement.growth.initNew(RSConfig.get().startingResources);
 		settlement.dirty = true;
 		return settlement;
 	}
@@ -98,6 +103,10 @@ public final class Settlement {
 
 	public SettlementRuntime runtime() {
 		return runtime;
+	}
+
+	public GrowthState growth() {
+		return growth;
 	}
 
 	public boolean isSurveyed() {
@@ -202,6 +211,7 @@ public final class Settlement {
 		tag.putInt("blocks_repaired", blocksRepaired);
 		tag.put("blueprint", blueprint.save());
 		tag.putLongArray("player_blocks", playerBlocks.toLongArray());
+		tag.put("growth", growth.save());
 		return tag;
 	}
 
@@ -220,6 +230,7 @@ public final class Settlement {
 		settlement.villagers = tag.getIntOr("villagers", 0);
 		settlement.beds = tag.getIntOr("beds", 0);
 		settlement.blocksRepaired = tag.getIntOr("blocks_repaired", 0);
+		settlement.growth.load(tag.getCompoundOrEmpty("growth"), RSConfig.get().startingResources);
 		return settlement;
 	}
 }
