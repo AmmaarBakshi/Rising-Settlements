@@ -1,6 +1,7 @@
 package com.risingsettlements.work;
 
 import com.risingsettlements.village.Settlement;
+import com.risingsettlements.world.BlockRules;
 import com.risingsettlements.world.MultiBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -47,8 +48,8 @@ public final class BlockPlacer {
 			BlockState otherState = otherHalf(state);
 			level.setBlock(pos, state, Block.UPDATE_ALL);
 			level.setBlock(otherPos, otherState, Block.UPDATE_ALL);
-			settlement.blueprint().put(pos, state);
-			settlement.blueprint().put(otherPos, otherState);
+			record(settlement, pos, state);
+			record(settlement, otherPos, otherState);
 		} else {
 			// Let fences, panes, walls and stairs connect to their new neighbours.
 			BlockState shaped = Block.updateFromNeighbourShapes(state, level, pos);
@@ -56,11 +57,23 @@ public final class BlockPlacer {
 				shaped = state;
 			}
 			level.setBlock(pos, shaped, Block.UPDATE_ALL);
-			settlement.blueprint().put(pos, shaped);
+			record(settlement, pos, shaped);
 		}
 		settlement.markDirty();
 		effects(level, pos, state);
 		swing(worker, pos);
+	}
+
+	/**
+	 * Adds a placed block to the village blueprint so it is repaired if it is ever lost.
+	 * Crops, water and plain ground are left out: they change on their own.
+	 */
+	private static void record(Settlement settlement, BlockPos pos, BlockState state) {
+		if (BlockRules.isVillageBlock(state)) {
+			settlement.blueprint().put(pos, state);
+		} else {
+			settlement.blueprint().remove(pos.asLong());
+		}
 	}
 
 	private static BlockState otherHalf(BlockState state) {
