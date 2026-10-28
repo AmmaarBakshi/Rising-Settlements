@@ -1,0 +1,96 @@
+package com.risingsettlements.work;
+
+import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.village.Settlement;
+import com.risingsettlements.world.PlacementRules;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Moves a {@link BuildJob} forward, one block at a time.
+ *
+ * <p>Each step: make sure a villager is working on it, walk them to the next spot, and
+ * once they are close (or have tried for a while) place the block. Then wait the
+ * configured interval before the next one. This keeps every village to a handful of
+ * blocks per second at most.
+ */
+public final class JobRunner {
+	/** Check the walking villager's progress once a second. */
+	private static final int GUIDE_INTERVAL = 20;
+
+	public enum Status {
+		/** Work is going on (or waiting for the next step). */
+		WORKING,
+		/** No villager can work right now, e.g. at night. */
+		WAITING_FOR_WORKER,
+		/** Every block is done. */
+		FINISHED
+	}
+
+	private JobRunner() {
+	}
+
+	/**
+	 * @param interval ticks between two placed blocks
+	 */
+	public static Status tick(ServerLevel level, Settlement settlement, BuildJob job, long time, int interval) {
+		Placement next = job.peek();
+		if (next == null) {
+			return Status.FINISHED;
+		}
+
+		Villager worker = Workers.resolve(level, settlement, job, next.pos(), professionFor(job.kind()));
+		if (worker == null) {
+			return Status.WAITING_FOR_WORKER;
+		}
+		if (job.walkStartedAt == 0) {
+			job.walkStartedAt = time;
+		}
+		if ((time - job.walkStartedAt) % GUIDE_INTERVAL == 0) {
+			Workers.guide(worker, next.pos());
+		}
+		if (time < job.nextActionTime) {
+			return Status.WORKING;
+		}
+
+		boolean arrived = Workers.isNear(worker, next.pos());
+		boolean gaveUpWalking = time - job.walkStartedAt >= RSConfig.get().workerWalkTimeoutTicks;
+		if (!arrived && !gaveUpWalking) {
+			return Status.WORKING;
+		}
+
+		switch (PlacementRules.check(level, settlement, next)) {
+			case OK -> {
+				BlockPlacer.place(level, settlement, next, worker);
+				job.completeHead();
+				job.nextActionTime = time + interval;
+				job.walkStartedAt = time;
+			}
+			case SKIP -> job.skipHead();
+			case LATER -> {
+				// Try something else first. If nothing in the queue can be placed, give up on this one.
+				if (job.deferrals > job.remaining() + 8) {
+					job.skipHead();
+					job.deferrals = 0;
+				} else {
+					job.deferHead();
+				}
+				job.nextActionTime = time + 5;
+			}
+		}
+		return job.isFinished() ? Status.FINISHED : Status.WORKING;
+	}
+
+	/** The villager profession that best fits a kind of job. */
+	static @Nullable ResourceKey<VillagerProfession> professionFor(BuildJob.Kind kind) {
+		return switch (kind) {
+			case FARM -> VillagerProfession.FARMER;
+			case HOUSE, WALL, WELL, REPAIR -> VillagerProfession.MASON;
+			case LAMPS -> VillagerProfession.TOOLSMITH;
+			case ROAD -> VillagerProfession.CARTOGRAPHER;
+		};
+	}
+}
