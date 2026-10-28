@@ -39,6 +39,8 @@ public final class SettlementManager extends SavedData {
 			new SavedDataType<>(RisingSettlements.id("settlements"), SettlementManager::new, CODEC, null);
 
 	private final Map<UUID, Settlement> settlements = new LinkedHashMap<>();
+	/** True if this dimension has ever had a settlement, so removals still get saved. */
+	private boolean hadSettlements;
 
 	public SettlementManager() {
 	}
@@ -47,6 +49,7 @@ public final class SettlementManager extends SavedData {
 		for (Settlement settlement : loaded) {
 			settlements.put(settlement.id(), settlement);
 		}
+		hadSettlements = !settlements.isEmpty();
 	}
 
 	public static SettlementManager get(ServerLevel level) {
@@ -63,6 +66,7 @@ public final class SettlementManager extends SavedData {
 
 	public void add(Settlement settlement) {
 		settlements.put(settlement.id(), settlement);
+		hadSettlements = true;
 		setDirty();
 	}
 
@@ -104,6 +108,10 @@ public final class SettlementManager extends SavedData {
 
 	@Override
 	public boolean isDirty() {
+		if (settlements.isEmpty() && !hadSettlements) {
+			// Don't write empty files for dimensions without villages (the Nether, the End).
+			return false;
+		}
 		if (super.isDirty()) {
 			return true;
 		}
