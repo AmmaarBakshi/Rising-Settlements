@@ -54,6 +54,40 @@ public final class RSConfig {
 	/** How many village blocks to check for damage per tick. */
 	public int damageScanBlocksPerTick = 128;
 
+	// --- Growth --------------------------------------------------------------------------
+
+	/** Master switch for all growth (houses, farms, roads, wells, lamps, walls). */
+	public boolean growthEnabled = true;
+	public boolean housesEnabled = true;
+	public boolean farmsEnabled = true;
+	public boolean roadsEnabled = true;
+	public boolean wellsEnabled = true;
+	public boolean lampsEnabled = true;
+	/** Walls are only built when a mayor asks for one. */
+	public boolean wallsEnabled = true;
+	/** Minimum time between two growth projects (24000 = one in-game day). */
+	public int projectIntervalTicks = 24000;
+	/** Time between two placed blocks while building (20 = one block per second). */
+	public int buildIntervalTicks = 20;
+	/** Maximum number of new houses per village. */
+	public int maxNewHouses = 12;
+	/** A village needs at least this many villagers before it builds a house. */
+	public int minVillagersForHouse = 3;
+	/** Villages want about this many farmland blocks per villager. */
+	public int farmlandPerVillager = 6;
+	/** Each villager adds this many resources per in-game day. Players can donate more. */
+	public int resourcesPerVillagerPerDay = 10;
+	public int startingResources = 60;
+	public int maxResources = 2000;
+	public int houseCost = 120;
+	public int farmCost = 40;
+	public int roadCost = 20;
+	public int wellCost = 60;
+	public int lampsCost = 30;
+	public int wallCost = 200;
+	/** Upper limit for the number of blocks in one wall project. */
+	public int maxWallBlocks = 1200;
+
 	// --- Workers -------------------------------------------------------------------------
 
 	/** If the working villager can't reach a spot in this time, the block is placed anyway. */
@@ -100,6 +134,21 @@ public final class RSConfig {
 		repairIntervalTicks = clamp(repairIntervalTicks, 5, 24000);
 		damageScanBlocksPerTick = clamp(damageScanBlocksPerTick, 8, 4096);
 		workerWalkTimeoutTicks = clamp(workerWalkTimeoutTicks, 40, 2400);
+		projectIntervalTicks = clamp(projectIntervalTicks, 200, 24000 * 30);
+		buildIntervalTicks = clamp(buildIntervalTicks, 5, 24000);
+		maxNewHouses = clamp(maxNewHouses, 0, 100);
+		minVillagersForHouse = clamp(minVillagersForHouse, 0, 100);
+		farmlandPerVillager = clamp(farmlandPerVillager, 0, 100);
+		resourcesPerVillagerPerDay = clamp(resourcesPerVillagerPerDay, 0, 10000);
+		maxResources = clamp(maxResources, 0, 1_000_000);
+		startingResources = clamp(startingResources, 0, maxResources);
+		houseCost = clamp(houseCost, 0, maxResources);
+		farmCost = clamp(farmCost, 0, maxResources);
+		roadCost = clamp(roadCost, 0, maxResources);
+		wellCost = clamp(wellCost, 0, maxResources);
+		lampsCost = clamp(lampsCost, 0, maxResources);
+		wallCost = clamp(wallCost, 0, maxResources);
+		maxWallBlocks = clamp(maxWallBlocks, 16, 10000);
 	}
 
 	static int clamp(int value, int min, int max) {
