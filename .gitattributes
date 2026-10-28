@@ -1,0 +1,13 @@
+# Normalise text files to LF in the repository.
+* text=auto
+
+# The Unix start script must keep LF endings, or it breaks on Linux/macOS.
+/gradlew        text eol=lf
+
+# Windows scripts need CRLF endings.
+*.bat           text eol=crlf
+
+# Binary files: never touch line endings.
+*.jar           binary
+*.png           binary
+*.nbt           binary

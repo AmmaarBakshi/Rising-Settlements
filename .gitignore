@@ -1,0 +1,36 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# Fabric / Loom dev environment (worlds, logs, configs from runClient/runServer)
+run/
+remappedSrc/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+*.launch
+.settings/
+.classpath
+.project
+bin/
+
+# VS Code
+.vscode/
+
+# Java crash and profiler dumps
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
