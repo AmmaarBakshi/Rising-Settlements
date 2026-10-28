@@ -46,6 +46,15 @@ public enum VillageStyle {
 		return state.is(Blocks.DIRT_PATH) || state.is(road().getBlock());
 	}
 
+	/** Fills the gap under a new building where the ground dips. */
+	public BlockState foundation() {
+		return switch (this) {
+			case PLAINS, SAVANNA, TAIGA -> Blocks.COBBLESTONE.defaultBlockState();
+			case DESERT -> Blocks.CUT_SANDSTONE.defaultBlockState();
+			case SNOWY -> Blocks.STONE_BRICKS.defaultBlockState();
+		};
+	}
+
 	/** Border of new farm fields. */
 	public BlockState farmBorder(Direction.Axis axis) {
 		Block log = switch (this) {
