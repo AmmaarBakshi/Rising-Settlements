@@ -1,0 +1,63 @@
+plugins {
+	// Since Minecraft 26.1 the game ships without obfuscation, so Loom works directly
+	// with Mojang's own class and method names. No mappings (Yarn) are needed.
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+repositories {
+	// Loom adds the Minecraft, Fabric and library repositories automatically.
+	// Only add repositories here if the mod starts depending on other mods.
+}
+
+loom {
+	// Keeps client-only code (screens, rendering) in src/client so it can never be
+	// loaded on a dedicated server by accident.
+	splitEnvironmentSourceSets()
+
+	mods {
+		"rising_settlements" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+dependencies {
+	// Versions live in gradle.properties.
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	// Fills in ${version} inside fabric.mod.json.
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = "UTF-8"
+}
+
+java {
+	// Also builds a -sources jar next to the mod jar.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+
+	// Ship the license inside the jar.
+	from("LICENSE") {
+		rename { "${it}_$projectName" }
+	}
+}
