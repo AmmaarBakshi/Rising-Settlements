@@ -27,6 +27,7 @@ you choose what the village builds next.
 
 - [Features](#features)
 - [Commands](#commands)
+- [How it works](#how-it-works)
 - [Design rules](#design-rules)
 - [Installation (players)](#installation-players)
 - [Building from source (developers)](#building-from-source-developers)
@@ -40,7 +41,7 @@ you choose what the village builds next.
 | Feature | What it does | Status |
 |---|---|---|
 | Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. Protects every block a player places. | ✅ 0.2.0 |
-| Repairs | Villagers rebuild blocks lost to raids, explosions and fire. | Planned |
+| Repairs | Villagers rebuild blocks lost to raids, explosions and fire, one block at a time, with particles and sound. | ✅ 0.3.0 |
 | Farms | Farmers widen fields and start new ones nearby. | Planned |
 | Roads | Paths grow to reach new buildings. | Planned |
 | Houses | New biome-styled houses go up a few blocks at a time. | Planned |
@@ -54,6 +55,31 @@ you choose what the village builds next.
 | `/settlement info` | Everyone | Shows the nearest village (within 256 blocks): name, style, bell, border, villagers, beds and how many blocks are protected. |
 | `/settlement list` | Operators | Lists every village the mod knows in the current dimension. |
 | `/settlement scan` | Operators | Looks for villages around you right now, instead of waiting for the automatic scan. |
+| `/settlement repair` | Operators | Repairs the nearest village's damage right away, skipping the usual one-minute wait. |
+
+## How it works
+
+### Finding villages
+
+Every few seconds the mod looks for village bells in loaded chunks around each player.
+When it finds a bell inside a real village structure, it gives the village a name, works
+out its biome style and draws a border around it. Then it records every block of the
+village (the *blueprint*), a few thousand blocks per tick so the server never stutters.
+
+### Protecting player builds
+
+Whenever a player places a block anywhere near a village, the mod remembers that spot.
+Those spots are left alone forever: they are never repaired, replaced or built over. If a
+player breaks a village block, the mod treats that as the player's choice and doesn't put
+it back.
+
+### Repairs
+
+The mod slowly compares the village with its blueprint. When a village block has been
+missing for about a minute (because of a creeper, a raid, fire or anything else that isn't
+a player), a nearby villager walks over and puts it back. Masons are picked first. Each
+block appears with a puff of particles and its placing sound, one block every two seconds.
+Repairs wait until a raid is over.
 
 ## Design rules
 
@@ -194,7 +220,7 @@ mod stays safe on dedicated servers.
 
 - [x] **Phase 0: Setup.** Fabric project, Gradle wrapper, CI build.
 - [x] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
-- [ ] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
+- [x] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
 - [ ] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
 - [ ] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
 - [ ] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
