@@ -13,6 +13,9 @@
 	"rising_settlements.command.info.blocks": "Village blocks: %s",
 	"rising_settlements.command.info.blocks_surveying": "Village blocks: %s (still surveying...)",
 	"rising_settlements.command.info.player_blocks": "Protected player blocks: %s",
+	"rising_settlements.command.info.repairs": "Repairs: %s blocks rebuilt so far, %s damaged blocks noticed",
+	"rising_settlements.command.info.repairing": "Villagers are repairing damage (%s%% done)",
+	"rising_settlements.command.repair.result": "%s: %s damaged blocks will be repaired right away.",
 	"rising_settlements.command.list.header": "Known villages in this dimension: %s",
 	"rising_settlements.command.list.entry": "- %s (%s) at %s %s %s, %s villagers",
 	"rising_settlements.command.scan.result": "Found %s new village(s) nearby."

@@ -3,10 +3,12 @@ package com.risingsettlements.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.repair.RepairPlanner;
 import com.risingsettlements.util.Lang;
 import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.SettlementManager;
 import com.risingsettlements.village.VillageDiscovery;
+import com.risingsettlements.work.BuildJob;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -27,6 +29,7 @@ import java.util.List;
  *     <li>{@code /settlement info}: everyone. Shows the nearest village.</li>
  *     <li>{@code /settlement list}: operators. Lists every known village in this dimension.</li>
  *     <li>{@code /settlement scan}: operators. Looks for villages around you right now.</li>
+ *     <li>{@code /settlement repair}: operators. Repairs known damage now, without the usual wait.</li>
  * </ul>
  */
 public final class SettlementCommand {
@@ -48,18 +51,39 @@ public final class SettlementCommand {
 						.executes(SettlementCommand::list))
 				.then(Commands.literal("scan")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-						.executes(SettlementCommand::scan)));
+						.executes(SettlementCommand::scan))
+				.then(Commands.literal("repair")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.executes(SettlementCommand::repair)));
 	}
 
-	private static int info(CommandContext<CommandSourceStack> context) {
-		CommandSourceStack source = context.getSource();
+	/** The nearest settlement, or null after telling the player there is none. */
+	private static Settlement nearest(CommandSourceStack source) {
 		BlockPos pos = BlockPos.containing(source.getPosition());
 		Settlement settlement = SettlementManager.get(source.getLevel()).findNearest(pos, INFO_RANGE);
 		if (settlement == null) {
 			source.sendFailure(Lang.tr("command.no_village", INFO_RANGE));
+		}
+		return settlement;
+	}
+
+	private static int repair(CommandContext<CommandSourceStack> context) {
+		Settlement settlement = nearest(context.getSource());
+		if (settlement == null) {
 			return 0;
 		}
-		for (Component line : describe(source.getLevel(), settlement, pos)) {
+		int count = RepairPlanner.hurry(settlement);
+		context.getSource().sendSuccess(() -> Lang.tr("command.repair.result", settlement.name(), count), true);
+		return count;
+	}
+
+	private static int info(CommandContext<CommandSourceStack> context) {
+		CommandSourceStack source = context.getSource();
+		Settlement settlement = nearest(source);
+		if (settlement == null) {
+			return 0;
+		}
+		for (Component line : describe(source.getLevel(), settlement, BlockPos.containing(source.getPosition()))) {
 			source.sendSuccess(() -> line, false);
 		}
 		return 1;
@@ -81,6 +105,11 @@ public final class SettlementCommand {
 		lines.add(Lang.tr(settlement.isSurveyed() ? "command.info.blocks" : "command.info.blocks_surveying",
 				settlement.blueprint().size()));
 		lines.add(Lang.tr("command.info.player_blocks", settlement.playerBlockCount()));
+		lines.add(Lang.tr("command.info.repairs", settlement.blocksRepaired(), settlement.runtime().damage.missingCount()));
+		BuildJob repairJob = settlement.runtime().repairJob;
+		if (repairJob != null) {
+			lines.add(Lang.tr("command.info.repairing", repairJob.percent()).withStyle(ChatFormatting.GREEN));
+		}
 		return lines;
 	}
 
