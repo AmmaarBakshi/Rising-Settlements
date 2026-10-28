@@ -38,6 +38,9 @@ public final class Settlement {
 	/** Set whenever something worth saving changes; cleared after the world saves. */
 	private boolean dirty;
 
+	/** Work in progress that is not saved (see {@link SettlementRuntime}). */
+	private final SettlementRuntime runtime = new SettlementRuntime();
+
 	private Settlement(UUID id, String name, BlockPos bell, BoundingBox bounds, VillageStyle style, long foundedAt,
 					   Blueprint blueprint, LongOpenHashSet playerBlocks) {
 		this.id = id;
@@ -90,6 +93,10 @@ public final class Settlement {
 
 	public Blueprint blueprint() {
 		return blueprint;
+	}
+
+	public SettlementRuntime runtime() {
+		return runtime;
 	}
 
 	public boolean isSurveyed() {
