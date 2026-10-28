@@ -24,11 +24,21 @@ public final class SettlementTicker {
 		VillageDiscovery.tick(level, manager);
 
 		RSConfig config = RSConfig.get();
+		long time = level.getGameTime();
 		for (Settlement settlement : manager.all()) {
 			if (!level.isLoaded(settlement.bell())) {
 				continue;
 			}
 			VillageSurvey.tickSettlement(level, settlement, config.surveyBlocksPerTick);
+			if (isTurn(settlement, time, config.censusIntervalTicks)) {
+				VillageCensus.run(level, settlement);
+			}
 		}
+	}
+
+	/** True once every {@code interval} ticks, at a different tick for each settlement. */
+	static boolean isTurn(Settlement settlement, long time, int interval) {
+		long offset = Math.floorMod(settlement.id().getLeastSignificantBits(), interval);
+		return (time + offset) % interval == 0;
 	}
 }
