@@ -68,6 +68,11 @@ public final class BuildJob {
 		return kind;
 	}
 
+	/** The villager currently doing this job, if any. */
+	public @Nullable UUID workerId() {
+		return worker;
+	}
+
 	public boolean isFinished() {
 		return queue.isEmpty();
 	}

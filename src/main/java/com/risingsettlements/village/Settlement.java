@@ -34,6 +34,7 @@ public final class Settlement {
 	private boolean surveyed;
 	private int villagers;
 	private int beds;
+	private int blocksRepaired;
 
 	/** Set whenever something worth saving changes; cleared after the world saves. */
 	private boolean dirty;
@@ -124,6 +125,15 @@ public final class Settlement {
 		}
 	}
 
+	public int blocksRepaired() {
+		return blocksRepaired;
+	}
+
+	public void addBlocksRepaired(int count) {
+		blocksRepaired += count;
+		markDirty();
+	}
+
 	// ------------------------------------------------------------------ areas
 
 	/** Inside the village's current border. */
@@ -189,6 +199,7 @@ public final class Settlement {
 		tag.putBoolean("surveyed", surveyed);
 		tag.putInt("villagers", villagers);
 		tag.putInt("beds", beds);
+		tag.putInt("blocks_repaired", blocksRepaired);
 		tag.put("blueprint", blueprint.save());
 		tag.putLongArray("player_blocks", playerBlocks.toLongArray());
 		return tag;
@@ -208,6 +219,7 @@ public final class Settlement {
 		settlement.surveyed = tag.getBooleanOr("surveyed", false);
 		settlement.villagers = tag.getIntOr("villagers", 0);
 		settlement.beds = tag.getIntOr("beds", 0);
+		settlement.blocksRepaired = tag.getIntOr("blocks_repaired", 0);
 		return settlement;
 	}
 }

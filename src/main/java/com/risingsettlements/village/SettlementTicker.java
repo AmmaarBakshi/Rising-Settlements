@@ -1,6 +1,7 @@
 package com.risingsettlements.village;
 
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.repair.RepairPlanner;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
 
@@ -30,6 +31,7 @@ public final class SettlementTicker {
 				continue;
 			}
 			VillageSurvey.tickSettlement(level, settlement, config.surveyBlocksPerTick);
+			RepairPlanner.tick(level, settlement, time);
 			if (isTurn(settlement, time, config.censusIntervalTicks)) {
 				VillageCensus.run(level, settlement);
 			}
