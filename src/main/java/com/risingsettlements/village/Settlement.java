@@ -152,6 +152,12 @@ public final class Settlement {
 		}
 	}
 
+	public void removePlayerBlock(BlockPos pos) {
+		if (playerBlocks.remove(pos.asLong())) {
+			markDirty();
+		}
+	}
+
 	public int playerBlockCount() {
 		return playerBlocks.size();
 	}

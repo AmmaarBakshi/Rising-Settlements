@@ -4,6 +4,7 @@ import com.risingsettlements.config.RSConfig;
 import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.SettlementManager;
 import com.risingsettlements.world.MultiBlocks;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,6 +30,35 @@ public final class PlayerBlockTracker {
 				mark(settlement, other);
 			}
 		}
+	}
+
+	public static void register() {
+		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+			if (level instanceof ServerLevel serverLevel) {
+				onPlayerBroke(serverLevel, pos, state);
+			}
+		});
+	}
+
+	/**
+	 * A player broke a block. If it was a village block, the player chose to remove it, so
+	 * the village will not rebuild it. If it was the player's own block, the spot is free again.
+	 */
+	public static void onPlayerBroke(ServerLevel level, BlockPos pos, BlockState state) {
+		int radius = RSConfig.get().maxVillageRadius;
+		for (Settlement settlement : SettlementManager.get(level).findAround(pos, radius)) {
+			forget(settlement, pos);
+			BlockPos other = MultiBlocks.otherPart(pos, state);
+			if (other != null) {
+				forget(settlement, other);
+			}
+		}
+	}
+
+	private static void forget(Settlement settlement, BlockPos pos) {
+		settlement.blueprint().remove(pos.asLong());
+		settlement.removePlayerBlock(pos);
+		settlement.markDirty();
 	}
 
 	private static void mark(Settlement settlement, BlockPos pos) {

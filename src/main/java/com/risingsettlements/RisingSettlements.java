@@ -1,6 +1,7 @@
 package com.risingsettlements;
 
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.tracking.PlayerBlockTracker;
 import com.risingsettlements.village.SettlementTicker;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
@@ -25,6 +26,7 @@ public class RisingSettlements implements ModInitializer {
 		LOGGER.info("Rising Settlements is loading. Villages will start to grow.");
 		RSConfig.load();
 		SettlementTicker.register();
+		PlayerBlockTracker.register();
 	}
 
 	/** Builds an identifier in the mod's namespace, e.g. {@code rising_settlements:village}. */
