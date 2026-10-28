@@ -46,7 +46,9 @@ public final class TemplateGenerator {
 	static final List<Style> STYLES = List.of(
 			new Style("plains", "cobblestone", "oak_planks", "oak_planks", "oak_log", "oak_stairs",
 					"oak_slab", "oak_door", "red_bed", "oak_fence"),
-			new Style("desert", "cut_sandstone", "smooth_sandstone", "sandstone", "chiseled_sandstone", "smooth_sandstone_stairs",
+			// Desert walls use smooth sandstone: plain sandstone counts as natural ground, which the mod
+			// neither protects nor repairs.
+			new Style("desert", "cut_sandstone", "smooth_sandstone", "smooth_sandstone", "chiseled_sandstone", "smooth_sandstone_stairs",
 					"smooth_sandstone_slab", "birch_door", "yellow_bed", "birch_fence"),
 			new Style("savanna", "cobblestone", "acacia_planks", "acacia_planks", "acacia_log", "acacia_stairs",
 					"acacia_slab", "acacia_door", "orange_bed", "acacia_fence"),
@@ -95,7 +97,7 @@ public final class TemplateGenerator {
 				// Walls with log corners; the inside is kept clear.
 				for (int y = 1; y <= wallHeight; y++) {
 					if (corner) {
-						t.set(x, y, z, s.corner, "axis", "y");
+						t.set(x, y, z, s.corner, isPillar(s.corner) ? new String[] {"axis", "y"} : new String[0]);
 					} else if (edge) {
 						t.set(x, y, z, s.wall);
 					} else {
@@ -168,6 +170,11 @@ public final class TemplateGenerator {
 			}
 		}
 		return t;
+	}
+
+	/** Logs and stripped logs have an "axis" property; other corner blocks don't. */
+	static boolean isPillar(String block) {
+		return block.endsWith("_log") || block.endsWith("_wood");
 	}
 
 	// ------------------------------------------------------------------ template model
