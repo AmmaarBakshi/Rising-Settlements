@@ -1,0 +1,19 @@
+{
+	"rising_settlements.style.plains": "plains",
+	"rising_settlements.style.desert": "desert",
+	"rising_settlements.style.savanna": "savanna",
+	"rising_settlements.style.taiga": "taiga",
+	"rising_settlements.style.snowy": "snowy",
+
+	"rising_settlements.command.no_village": "No village found within %s blocks. Explore near a village bell first.",
+	"rising_settlements.command.info.header": "=== %s (%s village) ===",
+	"rising_settlements.command.info.bell": "Bell: %s %s %s (%s blocks away)",
+	"rising_settlements.command.info.border": "Border: %s x %s blocks (from %s, %s to %s, %s)",
+	"rising_settlements.command.info.population": "Villagers: %s | Beds: %s",
+	"rising_settlements.command.info.blocks": "Village blocks: %s",
+	"rising_settlements.command.info.blocks_surveying": "Village blocks: %s (still surveying...)",
+	"rising_settlements.command.info.player_blocks": "Protected player blocks: %s",
+	"rising_settlements.command.list.header": "Known villages in this dimension: %s",
+	"rising_settlements.command.list.entry": "- %s (%s) at %s %s %s, %s villagers",
+	"rising_settlements.command.scan.result": "Found %s new village(s) nearby."
+}

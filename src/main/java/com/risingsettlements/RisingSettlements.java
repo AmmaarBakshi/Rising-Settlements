@@ -1,5 +1,6 @@
 package com.risingsettlements;
 
+import com.risingsettlements.command.SettlementCommand;
 import com.risingsettlements.config.RSConfig;
 import com.risingsettlements.tracking.PlayerBlockTracker;
 import com.risingsettlements.village.SettlementTicker;
@@ -27,6 +28,7 @@ public class RisingSettlements implements ModInitializer {
 		RSConfig.load();
 		SettlementTicker.register();
 		PlayerBlockTracker.register();
+		SettlementCommand.register();
 	}
 
 	/** Builds an identifier in the mod's namespace, e.g. {@code rising_settlements:village}. */
