@@ -26,6 +26,7 @@ you choose what the village builds next.
 ## Contents
 
 - [Features](#features)
+- [Commands](#commands)
 - [Design rules](#design-rules)
 - [Installation (players)](#installation-players)
 - [Building from source (developers)](#building-from-source-developers)
@@ -38,13 +39,21 @@ you choose what the village builds next.
 
 | Feature | What it does | Status |
 |---|---|---|
-| Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. | Planned |
+| Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. Protects every block a player places. | ✅ 0.2.0 |
 | Repairs | Villagers rebuild blocks lost to raids, explosions and fire. | Planned |
 | Farms | Farmers widen fields and start new ones nearby. | Planned |
 | Roads | Paths grow to reach new buildings. | Planned |
 | Houses | New biome-styled houses go up a few blocks at a time. | Planned |
 | Mayor | Earn reputation, claim the bell, choose the next project. | Planned |
 | Config | Growth speed, max village size, each feature on or off. | Planned |
+
+## Commands
+
+| Command | Who | What it does |
+|---|---|---|
+| `/settlement info` | Everyone | Shows the nearest village (within 256 blocks): name, style, bell, border, villagers, beds and how many blocks are protected. |
+| `/settlement list` | Operators | Lists every village the mod knows in the current dimension. |
+| `/settlement scan` | Operators | Looks for villages around you right now, instead of waiting for the automatic scan. |
 
 ## Design rules
 
@@ -184,7 +193,7 @@ mod stays safe on dedicated servers.
 ## Roadmap
 
 - [x] **Phase 0: Setup.** Fabric project, Gradle wrapper, CI build.
-- [ ] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
+- [x] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
 - [ ] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
 - [ ] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
 - [ ] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
