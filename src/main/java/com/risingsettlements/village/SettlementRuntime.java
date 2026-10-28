@@ -1,5 +1,7 @@
 package com.risingsettlements.village;
 
+import com.risingsettlements.repair.DamageScanner;
+import com.risingsettlements.work.BuildJob;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -11,4 +13,10 @@ import org.jspecify.annotations.Nullable;
 public final class SettlementRuntime {
 	/** Recording of the original village blocks, while it is running. */
 	@Nullable VillageSurvey survey;
+
+	/** Looks for missing village blocks. */
+	public final DamageScanner damage = new DamageScanner();
+
+	/** The current repair job, if villagers are repairing. Takes priority over building. */
+	public @Nullable BuildJob repairJob;
 }
