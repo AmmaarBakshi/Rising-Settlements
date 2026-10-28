@@ -43,6 +43,22 @@ public final class RSConfig {
 	/** How often to recount villagers and beds. */
 	public int censusIntervalTicks = 600;
 
+	// --- Repairs -------------------------------------------------------------------------
+
+	/** Villagers rebuild village blocks lost to raids, explosions and fire. */
+	public boolean repairsEnabled = true;
+	/** How long a block must be missing before villagers start to repair it (1200 = 1 minute). */
+	public int repairDelayTicks = 1200;
+	/** Time between two repaired blocks (40 = one block every 2 seconds). */
+	public int repairIntervalTicks = 40;
+	/** How many village blocks to check for damage per tick. */
+	public int damageScanBlocksPerTick = 128;
+
+	// --- Workers -------------------------------------------------------------------------
+
+	/** If the working villager can't reach a spot in this time, the block is placed anyway. */
+	public int workerWalkTimeoutTicks = 300;
+
 	public static RSConfig get() {
 		return instance;
 	}
@@ -79,6 +95,11 @@ public final class RSConfig {
 		maxVillageRadius = clamp(maxVillageRadius, 32, 256);
 		surveyBlocksPerTick = clamp(surveyBlocksPerTick, 256, 65536);
 		censusIntervalTicks = clamp(censusIntervalTicks, 100, 24000);
+		repairDelayTicks = clamp(repairDelayTicks, 0, 24000 * 7);
+		// "At most a few blocks per second": never faster than 4 blocks per second.
+		repairIntervalTicks = clamp(repairIntervalTicks, 5, 24000);
+		damageScanBlocksPerTick = clamp(damageScanBlocksPerTick, 8, 4096);
+		workerWalkTimeoutTicks = clamp(workerWalkTimeoutTicks, 40, 2400);
 	}
 
 	static int clamp(int value, int min, int max) {
