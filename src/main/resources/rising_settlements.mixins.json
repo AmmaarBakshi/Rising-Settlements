@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.risingsettlements.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"BlockItemMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
