@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "rising_settlements",
+	"version": "${version}",
+	"name": "Rising Settlements",
+	"description": "Villages grow over time: villagers build houses, extend roads, plant farms and repair damage. Help a village enough and you can claim its bell to become mayor.",
+	"authors": [
+		"AmmaarBakshi"
+	],
+	"contact": {
+		"homepage": "https://github.com/AmmaarBakshi/Rising-Settlements",
+		"sources": "https://github.com/AmmaarBakshi/Rising-Settlements",
+		"issues": "https://github.com/AmmaarBakshi/Rising-Settlements/issues"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.risingsettlements.RisingSettlements"
+		],
+		"client": [
+			"com.risingsettlements.client.RisingSettlementsClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
