@@ -28,8 +28,12 @@ you choose what the village builds next.
 - [Features](#features)
 - [Commands](#commands)
 - [How it works](#how-it-works)
+- [Configuration](#configuration)
 - [Design rules](#design-rules)
 - [Installation (players)](#installation-players)
+- [Removing the mod](#removing-the-mod)
+- [FAQ](#faq)
+- [Known limitations](#known-limitations)
 - [Building from source (developers)](#building-from-source-developers)
 - [Project structure](#project-structure)
 - [Roadmap](#roadmap)
@@ -49,7 +53,8 @@ you choose what the village builds next.
 | Walls | A wall along the village border, with gaps where roads cross it. Only built when asked for. | ✅ 0.4.0 |
 | Reputation | Trading, defending the village and donating at the bell earn its trust. Hurting it costs trust. | ✅ 0.5.0 |
 | Mayor | Claim the bell with enough reputation, then pick the next project and pause or resume growth from the mayor screen. | ✅ 0.5.0 |
-| Config | Growth speed, max village size, each feature on or off. | Planned |
+| Working villagers | The villager doing a job walks there and holds a fitting tool: pickaxe, axe, hoe, shovel or lantern. | ✅ 1.0.0 |
+| Config | Growth speed, max village size, costs, reputation, and each feature on or off. Reload without restarting. | ✅ 1.0.0 |
 
 ## Commands
 
@@ -63,6 +68,7 @@ you choose what the village builds next.
 | `/settlement grow <project>` | Operators | Starts a specific project right now, for free: `house`, `farm`, `road`, `well`, `lamps` or `wall`. |
 | `/settlement pause` / `resume` | Operators | Stops or restarts growth in the nearest village. Repairs carry on. |
 | `/settlement cancel` | Operators | Stops the current project. Blocks already placed stay. |
+| `/settlement reload` | Operators | Reads the config file again, so changes apply without a restart. |
 | `/settlement mayor` | Everyone | Opens the mayor screen (if you are the mayor and near the bell), or says who the mayor is. |
 | `/settlement mayor claim` | Everyone | Claims the bell, like sneak-using it. You must be near the bell. |
 | `/settlement mayor request <project>` / `auto` | The mayor | Picks the next project, or lets the village choose again. |
@@ -184,6 +190,76 @@ back. From there you can:
 A mayor whose reputation falls below half of what it takes to claim the bell (25) loses
 the office, and so does a mayor who steps down. Their pick of next project goes with them.
 
+## Configuration
+
+The config file is `config/rising_settlements.json` (in `.minecraft` for single player,
+in the server folder for a server). It is created with the defaults on first start. Edit
+it, then run `/settlement reload` or restart. Values outside a sensible range are pulled
+back into it.
+
+Times are in game ticks: 20 ticks = 1 second, 1200 = 1 minute, 24000 = 1 in-game day.
+
+**Finding villages**
+
+| Option | Default | What it does |
+|---|---|---|
+| `discoveryRadius` | 96 | How far around each player (in blocks) to look for village bells. |
+| `discoveryIntervalTicks` | 100 | How often to look. |
+| `villageMargin` | 8 | Blocks added around the original village to form its border. |
+| `maxVillageRadius` | 96 | How far from the bell a village may ever grow. Player blocks are tracked in this whole area. |
+| `surveyBlocksPerTick` | 4096 | Positions checked per tick while recording a new village. |
+| `censusIntervalTicks` | 600 | How often villagers and beds are counted. |
+
+**Repairs**
+
+| Option | Default | What it does |
+|---|---|---|
+| `repairsEnabled` | true | Switches repairs on or off. |
+| `repairDelayTicks` | 1200 | How long a block must be missing before it is repaired. |
+| `repairIntervalTicks` | 40 | Time between two repaired blocks. |
+| `damageScanBlocksPerTick` | 128 | Village blocks checked for damage per tick. |
+
+**Growth**
+
+| Option | Default | What it does |
+|---|---|---|
+| `growthEnabled` | true | Switches all growth on or off. |
+| `housesEnabled`, `farmsEnabled`, `roadsEnabled`, `wellsEnabled`, `lampsEnabled`, `wallsEnabled` | true | Switch each kind of project on or off. |
+| `projectIntervalTicks` | 24000 | Minimum time between two projects. |
+| `buildIntervalTicks` | 20 | Time between two placed blocks while building. |
+| `maxNewHouses` | 12 | New houses per village, at most. |
+| `minVillagersForHouse` | 3 | Villagers a village needs before it builds houses. |
+| `farmlandPerVillager` | 6 | Farmland a village wants per villager. |
+| `resourcesPerVillagerPerDay` | 10 | Daily income per villager. |
+| `startingResources` | 60 | Resources a newly found village starts with. |
+| `maxResources` | 2000 | Most resources a village can store. |
+| `houseCost`, `farmCost`, `roadCost`, `wellCost`, `lampsCost`, `wallCost` | 120, 40, 20, 60, 30, 200 | What each project costs. |
+| `maxWallBlocks` | 1200 | Most blocks in one wall. |
+
+**Reputation and mayor**
+
+| Option | Default | What it does |
+|---|---|---|
+| `mayorEnabled` | true | Switches reputation, claiming the bell and the mayor screen on or off. |
+| `mayorReputation` | 50 | Reputation needed to claim the bell. |
+| `reputationPerTrade` | 2 | Reputation per trade. |
+| `reputationPerRaiderKill` | 5 | Reputation per raider killed in or near the village. |
+| `reputationPerMonsterKill` | 1 | Reputation per other monster killed inside the village. |
+| `villagerKillPenalty` | 50 | Reputation lost per villager killed. |
+| `golemKillPenalty` | 25 | Reputation lost per village iron golem killed. |
+| `donationsEnabled` | true | Switches donating at the bell on or off. |
+| `resourcesPerReputation` | 10 | Resources donated per point of reputation. |
+
+**Workers**
+
+| Option | Default | What it does |
+|---|---|---|
+| `workerWalkTimeoutTicks` | 300 | If the worker gets no closer for this long, another villager takes over. After two swaps the block is placed anyway. |
+| `workersHoldTools` | true | Working villagers hold a tool that fits the job. |
+
+**Faster growth for testing:** set `projectIntervalTicks` to 1200 and
+`buildIntervalTicks` to 5, then run `/settlement reload`.
+
 ## Design rules
 
 The mod follows these rules everywhere:
@@ -262,6 +338,58 @@ all village logic; clients need the mod for the mayor screen. A player without t
 on their client gets the mayor information in chat instead and can use the
 `/settlement mayor` commands.
 
+## Removing the mod
+
+The mod only places vanilla blocks and keeps its own data in separate files, so a world
+keeps working without it:
+
+1. Close the game (or stop the server) normally, so working villagers put their tools
+   away.
+2. Delete `rising-settlements-<version>.jar` from the `mods` folder.
+
+Everything the villagers built stays. The village data in
+`<world>/dimensions/minecraft/*/data/rising_settlements/` is no longer used and can be
+deleted. When the world loads you may see `Missing data pack rising_settlements` in the
+log; that is harmless. If you install the mod again later, it finds the villages again.
+
+## FAQ
+
+**Will villagers break or build over my houses?**
+No. Every block a player places near a village is remembered and never changed. New
+buildings only go on natural ground (grass, dirt, sand, snow, stone) with nothing but
+plants above it, so even builds made before you installed the mod are left alone.
+
+**I broke a village house. Why isn't it rebuilt?**
+Blocks a player breaks are treated as the player's choice and are not put back. Repairs
+are for damage from creepers, raids, fire and other mobs.
+
+**Nothing is happening in my village.**
+Villages only work while their chunks are loaded, so stay nearby. Projects start about
+once a day, nobody builds at night or during a raid, and repairs come first. Run
+`/settlement info` near the bell: it shows the resources, the current project and what
+the village is waiting for (for example "Saving up for: house").
+
+**Does it work on servers?**
+Yes. All village logic runs on the server. Install the mod on the server and on each
+client (players without it can still use the `/settlement mayor` commands).
+
+**Does it work with TLauncher?**
+Yes. Install Fabric Loader for 26.3 as described above, pick the Fabric version in
+TLauncher and put the jars in `.minecraft\mods`.
+
+**Do villages built by players count?**
+No. Only villages that the game generated (a bell inside a village structure) are tracked.
+
+## Known limitations
+
+- Only naturally generated villages grow; villages built by players are not tracked.
+- Villages only change while players are nearby (their chunks must be loaded).
+- Repairs bring back blocks, not what was inside them: a rebuilt chest is empty.
+- On very hilly or wooded land a village may find no room to grow. It then tries other
+  projects and keeps looking.
+- The mayor screen needs the mod on the client.
+- Trades with wandering traders don't earn reputation; they don't belong to a village.
+
 ## Building from source (developers)
 
 You need **JDK 25** and **Git**. Gradle is included through the wrapper.
@@ -325,7 +453,7 @@ src/
 │   │   └── world/                     Block rules, terrain and placement safety checks
 │   └── resources/
 │       ├── fabric.mod.json            Mod metadata for Fabric Loader
-│       ├── assets/rising_settlements/ Language file
+│       ├── assets/rising_settlements/ Language file and icon
 │       └── data/rising_settlements/   House and well templates
 ├── client/                        Client-only code (screens, visuals)
 │   └── java/com/risingsettlements/client/
@@ -350,17 +478,13 @@ mod stays safe on dedicated servers.
 
 ## Contributing
 
-Bug reports, ideas and pull requests are welcome.
-
-1. Open an [issue](https://github.com/AmmaarBakshi/Rising-Settlements/issues) to describe the bug or idea.
-2. Fork the repo and create a branch.
-3. Make sure `./gradlew build` passes, and test your change in game with `./gradlew runClient`.
-4. Open a pull request that explains what changed and how you tested it.
+Bug reports, ideas and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for how to set up, test and submit a change, and [CHANGELOG.md](CHANGELOG.md) for what
+changed in each version.
 
 Please follow the [design rules](#design-rules), especially: never modify player-placed
-blocks, and keep all world logic on the server.
-
-All code in this project is original. Please do not copy code from other village mods.
+blocks, and keep all world logic on the server. All code in this project is original;
+please do not copy code from other village mods.
 
 ## License
 
