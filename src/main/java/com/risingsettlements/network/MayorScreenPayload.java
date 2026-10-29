@@ -15,6 +15,7 @@ import java.util.UUID;
  * Server to client: everything the mayor screen shows. Sent when the mayor opens the
  * screen, after each button press, and every couple of seconds while it stays open.
  *
+ * @param open       true to open the screen, false to only update it if it is still open
  * @param settlement which village this is about
  * @param title      the village name and style, e.g. "Mapleford (plains village)"
  * @param mayor      the mayor's name, or empty if there is none
@@ -26,6 +27,7 @@ import java.util.UUID;
  * @param projects   every project the mayor can pick, in display order
  */
 public record MayorScreenPayload(
+		boolean open,
 		UUID settlement,
 		Component title,
 		String mayor,
@@ -59,6 +61,7 @@ public record MayorScreenPayload(
 	}
 
 	private void write(RegistryFriendlyByteBuf buf) {
+		buf.writeBoolean(open);
 		buf.writeUUID(settlement);
 		ComponentSerialization.TRUSTED_STREAM_CODEC.encode(buf, title);
 		buf.writeUtf(mayor);
@@ -83,6 +86,7 @@ public record MayorScreenPayload(
 	}
 
 	private static MayorScreenPayload read(RegistryFriendlyByteBuf buf) {
+		boolean open = buf.readBoolean();
 		UUID settlement = buf.readUUID();
 		Component title = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(buf);
 		String mayor = buf.readUtf();
@@ -102,7 +106,7 @@ public record MayorScreenPayload(
 		for (int i = 0; i < count; i++) {
 			projects.add(new Project(buf.readUtf(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean()));
 		}
-		return new MayorScreenPayload(settlement, title, mayor, canManage, reputation, villagers, beds,
+		return new MayorScreenPayload(open, settlement, title, mayor, canManage, reputation, villagers, beds,
 				resources, maxResources, income, status, note, requested, paused, List.copyOf(projects));
 	}
 

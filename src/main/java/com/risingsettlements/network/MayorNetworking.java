@@ -46,7 +46,7 @@ public final class MayorNetworking {
 	public static void open(ServerPlayer player, Settlement settlement) {
 		ServerLevel level = player.level();
 		if (ServerPlayNetworking.canSend(player, MayorScreenPayload.TYPE)) {
-			ServerPlayNetworking.send(player, data(level, settlement, player));
+			ServerPlayNetworking.send(player, data(level, settlement, player, true));
 			return;
 		}
 		for (Component line : SettlementCommand.describe(level, settlement, player.blockPosition(), player)) {
@@ -63,7 +63,7 @@ public final class MayorNetworking {
 		}
 		if (!MayorOffice.canManage(player, settlement)) {
 			// Not (or no longer) the mayor, or walked away: the screen turns read-only.
-			ServerPlayNetworking.send(player, data(level, settlement, player));
+			ServerPlayNetworking.send(player, data(level, settlement, player, false));
 			return;
 		}
 		switch (payload.action()) {
@@ -83,11 +83,11 @@ public final class MayorNetworking {
 			case REFRESH -> {
 			}
 		}
-		ServerPlayNetworking.send(player, data(level, settlement, player));
+		ServerPlayNetworking.send(player, data(level, settlement, player, false));
 	}
 
 	/** Everything the screen shows, as seen by {@code viewer}. */
-	public static MayorScreenPayload data(ServerLevel level, Settlement settlement, ServerPlayer viewer) {
+	public static MayorScreenPayload data(ServerLevel level, Settlement settlement, ServerPlayer viewer, boolean open) {
 		RSConfig config = RSConfig.get();
 		GrowthState growth = settlement.growth();
 		BuildJob project = growth.project();
@@ -97,7 +97,8 @@ public final class MayorNetworking {
 		if (!config.growthEnabled) {
 			status = Lang.tr("command.info.growth_disabled");
 		} else if (project != null) {
-			status = Lang.tr("command.info.project", SettlementCommand.projectName(project.kind()), project.percent());
+			status = Lang.tr(growth.isPaused() ? "mayor.screen.paused_project" : "command.info.project",
+					SettlementCommand.projectName(project.kind()), project.percent());
 		} else if (growth.isPaused()) {
 			status = Lang.tr("command.info.paused");
 		} else if (repairs != null) {
@@ -115,6 +116,7 @@ public final class MayorNetworking {
 		}
 		BuildJob.Kind requested = growth.requested();
 		return new MayorScreenPayload(
+				open,
 				settlement.id(),
 				Lang.tr("mayor.screen.title", settlement.name(), Lang.tr("style." + settlement.style().id())),
 				settlement.leadership().mayorName(),

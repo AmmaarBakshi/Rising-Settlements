@@ -72,6 +72,8 @@ public final class MayorOffice {
 		}
 		Component message = Lang.tr(reasonKey, leadership.mayorName(), settlement.name());
 		leadership.clearMayor();
+		// The old mayor's pick goes with them; the village chooses for itself again.
+		settlement.growth().setRequested(null);
 		announce(level, settlement, message);
 		// Make sure the old mayor hears it even if they are far away.
 		ServerPlayer old = level.getServer().getPlayerList().getPlayer(mayor);
