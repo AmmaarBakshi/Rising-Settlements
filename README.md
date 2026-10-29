@@ -42,9 +42,11 @@ you choose what the village builds next.
 |---|---|---|
 | Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. Protects every block a player places. | ✅ 0.2.0 |
 | Repairs | Villagers rebuild blocks lost to raids, explosions and fire, one block at a time, with particles and sound. | ✅ 0.3.0 |
-| Farms | Farmers widen fields and start new ones nearby. | Planned |
-| Roads | Paths grow to reach new buildings. | Planned |
-| Houses | New biome-styled houses go up a few blocks at a time. | Planned |
+| Houses | New houses in the village's biome style go up a few blocks at a time, each with a path to its door. | ✅ 0.4.0 |
+| Farms | New fields with a water channel and the crops the biome's villages usually grow. | ✅ 0.4.0 |
+| Roads | Paths reach new buildings and grow further out from the village. | ✅ 0.4.0 |
+| Wells and lamp posts | Covered wells and lantern posts along the roads. | ✅ 0.4.0 |
+| Walls | A wall along the village border, with gaps where roads cross it. Only built when asked for. | ✅ 0.4.0 |
 | Mayor | Earn reputation, claim the bell, choose the next project. | Planned |
 | Config | Growth speed, max village size, each feature on or off. | Planned |
 
@@ -56,6 +58,13 @@ you choose what the village builds next.
 | `/settlement list` | Operators | Lists every village the mod knows in the current dimension. |
 | `/settlement scan` | Operators | Looks for villages around you right now, instead of waiting for the automatic scan. |
 | `/settlement repair` | Operators | Repairs the nearest village's damage right away, skipping the usual one-minute wait. |
+| `/settlement grow` | Operators | Starts the village's next project right now, for free. |
+| `/settlement grow <project>` | Operators | Starts a specific project right now, for free: `house`, `farm`, `road`, `well`, `lamps` or `wall`. |
+| `/settlement pause` / `resume` | Operators | Stops or restarts growth in the nearest village. Repairs carry on. |
+| `/settlement cancel` | Operators | Stops the current project. Blocks already placed stay. |
+
+`/settlement info` also shows the village's resources, what it is building and what it
+has built so far.
 
 ## How it works
 
@@ -80,6 +89,45 @@ missing for about a minute (because of a creeper, a raid, fire or anything else 
 a player), a nearby villager walks over and puts it back. Masons are picked first. Each
 block appears with a puff of particles and its placing sound, one block every two seconds.
 Repairs wait until a raid is over.
+
+### Growth
+
+Every in-game day, each villager adds 10 resources to the village (start: 60). Roughly
+once a day the village picks a project and pays for it:
+
+| Project | Cost | When the village wants it |
+|---|---|---|
+| Farm | 40 | There are fewer than 6 farmland blocks per villager. |
+| House | 120 | There are hardly any free beds, and at least 3 villagers live there. Up to 12 new houses. |
+| Road | 20 | A new building has no path yet, or the village has grown and its roads should reach further. |
+| Lamp posts | 30 | The roads have dark stretches (lamps keep 10 blocks apart from every light). |
+| Well | 60 | One well for every few new houses. |
+| Wall | 200 | Only when a mayor or an operator asks for it. |
+
+If the village can't afford what it wants, it saves up. If there is no room, it tries the
+next idea. Repairs always come first, and nothing is built during a raid or at night
+(villagers are asleep).
+
+**Where new buildings go.** A spot is only used if the ground is natural (grass, dirt,
+sand, snow or stone), close to flat, and empty above, and if there are no player blocks or
+village blocks on it or within two blocks of it. Houses stand beside a road with their door
+facing it, or on open land with their door facing the bell. A path is laid from the door
+to the nearest road. Roads are three blocks wide, climb at most one block per step and
+never cross water.
+
+**How it is built.** One villager does the work. Masons build houses, wells and walls,
+farmers build fields, cartographers lay roads and toolsmiths put up lamps (any villager
+helps out if those are missing). The worker walks to each spot and places one block at a
+time, about one block per second, clearing plants and filling dips first. Everything the
+village builds becomes part of its blueprint, so it is repaired too. The village border
+grows to cover the new buildings.
+
+**House designs.** Every style has three houses (small, medium and long, with 1 to 3
+beds) and a well, made from vanilla blocks in the style's materials. They are normal
+structure templates in `data/rising_settlements/structure/house/<style>/`, made by
+[`tools/TemplateGenerator.java`](tools/TemplateGenerator.java). A data pack can add more
+designs: any template in `data/<any namespace>/structure/house/<style>/` is used for
+villages of that style. Put the floor at `y = 0` and the front door on the `z = 0` side.
 
 ## Design rules
 
@@ -202,14 +250,29 @@ To update, look up new versions at <https://fabricmc.net/develop>.
 
 ```
 src/
-├── main/                     Common + server code (runs on the logical server)
+├── main/                          Common + server code (runs on the logical server)
 │   ├── java/com/risingsettlements/
-│   │   └── RisingSettlements.java       Mod entry point
+│   │   ├── RisingSettlements.java     Mod entry point
+│   │   ├── command/                   /settlement command
+│   │   ├── config/                    Config file (config/rising_settlements.json)
+│   │   ├── growth/                    Choosing projects, finding sites, planning houses,
+│   │   │                              farms, roads, wells, lamps and walls
+│   │   ├── mixin/                     Hook that notices player-placed blocks
+│   │   ├── repair/                    Noticing damage and planning repairs
+│   │   ├── tracking/                  Player block tracking
+│   │   ├── util/                      Translations
+│   │   ├── village/                   Settlements, discovery, survey, census, saved data
+│   │   ├── work/                      Build jobs, workers and block placement
+│   │   └── world/                     Block rules, terrain and placement safety checks
 │   └── resources/
-│       └── fabric.mod.json              Mod metadata for Fabric Loader
-└── client/                   Client-only code (screens, visuals)
-    └── java/com/risingsettlements/client/
-        └── RisingSettlementsClient.java Client entry point
+│       ├── fabric.mod.json            Mod metadata for Fabric Loader
+│       ├── assets/rising_settlements/ Language file
+│       └── data/rising_settlements/   House and well templates
+├── client/                        Client-only code (screens, visuals)
+│   └── java/com/risingsettlements/client/
+│       └── RisingSettlementsClient.java Client entry point
+tools/
+└── TemplateGenerator.java         Generates the house and well templates
 ```
 
 The `main` and `client` source sets are kept apart on purpose (Loom's
@@ -221,7 +284,7 @@ mod stays safe on dedicated servers.
 - [x] **Phase 0: Setup.** Fabric project, Gradle wrapper, CI build.
 - [x] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
 - [x] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
-- [ ] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
+- [x] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
 - [ ] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
 - [ ] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
 
