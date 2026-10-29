@@ -88,6 +88,27 @@ public final class RSConfig {
 	/** Upper limit for the number of blocks in one wall project. */
 	public int maxWallBlocks = 1200;
 
+	// --- Reputation and mayor ------------------------------------------------------------
+
+	/** Players can claim a village's bell and become its mayor. */
+	public boolean mayorEnabled = true;
+	/** Reputation needed to claim the bell. */
+	public int mayorReputation = 50;
+	/** Reputation for each trade with one of the village's villagers. */
+	public int reputationPerTrade = 2;
+	/** Reputation for killing a raider (pillager, vindicator, ravager...) near the village. */
+	public int reputationPerRaiderKill = 5;
+	/** Reputation for killing any other monster inside the village. */
+	public int reputationPerMonsterKill = 1;
+	/** Reputation lost for killing one of the village's villagers. */
+	public int villagerKillPenalty = 50;
+	/** Reputation lost for killing one of the village's iron golems. */
+	public int golemKillPenalty = 25;
+	/** Players can donate items at the bell (sneak + use while holding them). */
+	public boolean donationsEnabled = true;
+	/** Resources donated per point of reputation earned. */
+	public int resourcesPerReputation = 10;
+
 	// --- Workers -------------------------------------------------------------------------
 
 	/** If the working villager can't reach a spot in this time, the block is placed anyway. */
@@ -149,6 +170,13 @@ public final class RSConfig {
 		lampsCost = clamp(lampsCost, 0, maxResources);
 		wallCost = clamp(wallCost, 0, maxResources);
 		maxWallBlocks = clamp(maxWallBlocks, 16, 10000);
+		mayorReputation = clamp(mayorReputation, 0, 10000);
+		reputationPerTrade = clamp(reputationPerTrade, 0, 1000);
+		reputationPerRaiderKill = clamp(reputationPerRaiderKill, 0, 1000);
+		reputationPerMonsterKill = clamp(reputationPerMonsterKill, 0, 1000);
+		villagerKillPenalty = clamp(villagerKillPenalty, 0, 10000);
+		golemKillPenalty = clamp(golemKillPenalty, 0, 10000);
+		resourcesPerReputation = clamp(resourcesPerReputation, 1, 10000);
 	}
 
 	static int clamp(int value, int min, int max) {

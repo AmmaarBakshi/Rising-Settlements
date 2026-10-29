@@ -46,6 +46,9 @@ public final class Settlement {
 	/** Resources, current project and everything built so far. */
 	private final GrowthState growth = new GrowthState(this);
 
+	/** The mayor and every player's reputation. */
+	private final Leadership leadership = new Leadership(this);
+
 	private Settlement(UUID id, String name, BlockPos bell, BoundingBox bounds, VillageStyle style, long foundedAt,
 					   Blueprint blueprint, LongOpenHashSet playerBlocks) {
 		this.id = id;
@@ -122,6 +125,10 @@ public final class Settlement {
 
 	public GrowthState growth() {
 		return growth;
+	}
+
+	public Leadership leadership() {
+		return leadership;
 	}
 
 	public boolean isSurveyed() {
@@ -227,6 +234,7 @@ public final class Settlement {
 		tag.put("blueprint", blueprint.save());
 		tag.putLongArray("player_blocks", playerBlocks.toLongArray());
 		tag.put("growth", growth.save());
+		tag.put("leadership", leadership.save());
 		return tag;
 	}
 
@@ -246,6 +254,7 @@ public final class Settlement {
 		settlement.beds = tag.getIntOr("beds", 0);
 		settlement.blocksRepaired = tag.getIntOr("blocks_repaired", 0);
 		settlement.growth.load(tag.getCompoundOrEmpty("growth"), RSConfig.get().startingResources);
+		settlement.leadership.load(tag.getCompoundOrEmpty("leadership"));
 		return settlement;
 	}
 }
