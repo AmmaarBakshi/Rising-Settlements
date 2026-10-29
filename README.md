@@ -47,7 +47,8 @@ you choose what the village builds next.
 | Roads | Paths reach new buildings and grow further out from the village. | ✅ 0.4.0 |
 | Wells and lamp posts | Covered wells and lantern posts along the roads. | ✅ 0.4.0 |
 | Walls | A wall along the village border, with gaps where roads cross it. Only built when asked for. | ✅ 0.4.0 |
-| Mayor | Earn reputation, claim the bell, choose the next project. | Planned |
+| Reputation | Trading, defending the village and donating at the bell earn its trust. Hurting it costs trust. | ✅ 0.5.0 |
+| Mayor | Claim the bell with enough reputation, then pick the next project and pause or resume growth from the mayor screen. | ✅ 0.5.0 |
 | Config | Growth speed, max village size, each feature on or off. | Planned |
 
 ## Commands
@@ -62,9 +63,16 @@ you choose what the village builds next.
 | `/settlement grow <project>` | Operators | Starts a specific project right now, for free: `house`, `farm`, `road`, `well`, `lamps` or `wall`. |
 | `/settlement pause` / `resume` | Operators | Stops or restarts growth in the nearest village. Repairs carry on. |
 | `/settlement cancel` | Operators | Stops the current project. Blocks already placed stay. |
+| `/settlement mayor` | Everyone | Opens the mayor screen (if you are the mayor and near the bell), or says who the mayor is. |
+| `/settlement mayor claim` | Everyone | Claims the bell, like sneak-using it. You must be near the bell. |
+| `/settlement mayor request <project>` / `auto` | The mayor | Picks the next project, or lets the village choose again. |
+| `/settlement mayor pause` / `resume` / `resign` | The mayor | Pauses or resumes growth, or steps down. |
+| `/settlement mayor remove` | Operators | Removes the nearest village's mayor. |
+| `/settlement reputation <players> <amount>` | Operators | Gives (or with a negative amount, takes) reputation in the nearest village. |
 
-`/settlement info` also shows the village's resources, what it is building and what it
-has built so far.
+`/settlement info` also shows the mayor, your reputation, the village's resources, what it
+is building and what it has built so far. The mayor commands do the same as the mayor
+screen, for players who joined without the mod on their client.
 
 ## How it works
 
@@ -128,6 +136,53 @@ structure templates in `data/rising_settlements/structure/house/<style>/`, made 
 [`tools/TemplateGenerator.java`](tools/TemplateGenerator.java). A data pack can add more
 designs: any template in `data/<any namespace>/structure/house/<style>/` is used for
 villages of that style. Put the floor at `y = 0` and the front door on the `z = 0` side.
+
+### Reputation and mayors
+
+Every village keeps track of how much it trusts each player:
+
+| Action | Reputation |
+|---|---|
+| Trade with one of its villagers | +2 |
+| Kill a raider in or near the village | +5 |
+| Kill another monster inside the village | +1 |
+| Donate at the bell | +1 for every 10 resources |
+| Kill one of its villagers | −50 |
+| Kill one of its iron golems (not one you built) | −25 |
+
+You see each change in the action bar.
+
+**Donating.** Sneak and use the bell while holding something the village can use. The
+whole stack is given (as much as the storehouse has room for) and becomes resources for
+new projects:
+
+| Items | Resources each |
+|---|---|
+| Logs, planks, cobblestone, stone, sandstone, glass, wheat, carrots, potatoes, beetroots | 1 |
+| Bricks, stone bricks, copper ingots | 2 |
+| Bread | 3 |
+| Iron and gold ingots | 4 |
+| Hay bales | 9 |
+| Emeralds | 10 |
+| Diamonds | 20 |
+| Blocks of copper / iron or gold / emerald / diamond | 18 / 36 / 90 / 180 |
+
+**Becoming mayor.** With 50 reputation, sneak and use the bell with an empty hand to
+claim it. Each village has one mayor at a time. Using the bell normally still rings it,
+and shows everyone who the mayor is.
+
+**The mayor screen.** As mayor, sneak and use the bell with an empty hand to open it. It
+shows the village's villagers, beds, resources, current project and anything holding it
+back. From there you can:
+
+- pick the next project (house, farm, road, well, lamp posts or wall). The village builds
+  it as soon as it is due and can pay for it. If there is no room for it, the pick is dropped.
+- let the village choose its projects again.
+- pause or resume growth. Repairs carry on while growth is paused.
+- step down (two clicks).
+
+A mayor whose reputation falls below half of what it takes to claim the bell (25) loses
+the office, and so does a mayor who steps down. Their pick of next project goes with them.
 
 ## Design rules
 
@@ -203,7 +258,9 @@ in `.minecraft/logs/latest.log`:
 ### Multiplayer
 
 Install the mod and Fabric API on the **server and on every client**. The server runs
-all village logic. Clients need the mod for the mayor screen and visual effects.
+all village logic; clients need the mod for the mayor screen. A player without the mod
+on their client gets the mayor information in chat instead and can use the
+`/settlement mayor` commands.
 
 ## Building from source (developers)
 
@@ -257,7 +314,9 @@ src/
 │   │   ├── config/                    Config file (config/rising_settlements.json)
 │   │   ├── growth/                    Choosing projects, finding sites, planning houses,
 │   │   │                              farms, roads, wells, lamps and walls
-│   │   ├── mixin/                     Hook that notices player-placed blocks
+│   │   ├── mayor/                     Reputation, donations, the bell and the mayor's office
+│   │   ├── mixin/                     Hooks that notice player-placed blocks and trades
+│   │   ├── network/                   Mayor screen packets (data to the client, buttons back)
 │   │   ├── repair/                    Noticing damage and planning repairs
 │   │   ├── tracking/                  Player block tracking
 │   │   ├── util/                      Translations
@@ -270,7 +329,8 @@ src/
 │       └── data/rising_settlements/   House and well templates
 ├── client/                        Client-only code (screens, visuals)
 │   └── java/com/risingsettlements/client/
-│       └── RisingSettlementsClient.java Client entry point
+│       ├── RisingSettlementsClient.java Client entry point
+│       └── MayorScreen.java           The mayor screen
 tools/
 └── TemplateGenerator.java         Generates the house and well templates
 ```
@@ -285,7 +345,7 @@ mod stays safe on dedicated servers.
 - [x] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
 - [x] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
 - [x] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
-- [ ] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
+- [x] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
 - [ ] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
 
 ## Contributing
