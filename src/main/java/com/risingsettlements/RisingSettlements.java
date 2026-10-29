@@ -2,6 +2,7 @@ package com.risingsettlements;
 
 import com.risingsettlements.command.SettlementCommand;
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.mayor.Reputation;
 import com.risingsettlements.tracking.PlayerBlockTracker;
 import com.risingsettlements.village.SettlementTicker;
 import net.fabricmc.api.ModInitializer;
@@ -29,6 +30,7 @@ public class RisingSettlements implements ModInitializer {
 		SettlementTicker.register();
 		PlayerBlockTracker.register();
 		SettlementCommand.register();
+		Reputation.register();
 	}
 
 	/** Builds an identifier in the mod's namespace, e.g. {@code rising_settlements:village}. */

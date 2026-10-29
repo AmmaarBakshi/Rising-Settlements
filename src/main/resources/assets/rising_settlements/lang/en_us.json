@@ -47,5 +47,16 @@
 	"rising_settlements.command.pause.result": "Growth in %s is paused.",
 	"rising_settlements.command.resume.result": "Growth in %s continues.",
 	"rising_settlements.command.cancel.result": "%s stopped its current project. Blocks already placed stay.",
-	"rising_settlements.command.cancel.none": "%s isn't building anything right now."
+	"rising_settlements.command.cancel.none": "%s isn't building anything right now.",
+
+	"rising_settlements.reputation.gained": "+%s reputation in %s (now %s)",
+	"rising_settlements.reputation.lost": "-%s reputation in %s (now %s)",
+	"rising_settlements.reputation.can_claim": "The people of %s trust you enough to make you their mayor. Sneak and use the bell with an empty hand to claim it.",
+	"rising_settlements.mayor.claimed": "%s is now the mayor of %s!",
+	"rising_settlements.mayor.resigned": "%s stepped down as mayor of %s.",
+	"rising_settlements.mayor.lost_trust": "%s lost the trust of %s and is no longer its mayor.",
+	"rising_settlements.mayor.removed": "%s is no longer the mayor of %s (removed by an operator).",
+	"rising_settlements.donate.unwanted": "The villagers have no use for %s. Try building materials, ingots, gems or food.",
+	"rising_settlements.donate.full": "The storehouse of %s is full.",
+	"rising_settlements.donate.thanks": "%s thanks you! +%s resources (now %s)."
 }
