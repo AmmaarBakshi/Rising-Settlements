@@ -54,7 +54,9 @@ public final class Workers {
 			}
 			job.worker = null;
 		}
-		Villager picked = find(level, settlement, near, preferred, job.skippedWorkers);
+		long time = level.getGameTime();
+		job.benched.values().removeIf(until -> until <= time);
+		Villager picked = find(level, settlement, near, preferred, job.benched.keySet());
 		if (picked != null) {
 			job.worker = picked.getUUID();
 		}
@@ -63,7 +65,7 @@ public final class Workers {
 
 	/**
 	 * The nearest villager able to work, preferring the given profession (e.g. farmers for
-	 * farms), and leaving out villagers that already failed to reach this job.
+	 * farms), and leaving out villagers that recently got stuck on this job.
 	 */
 	public static @Nullable Villager find(ServerLevel level, Settlement settlement, BlockPos near,
 										  @Nullable ResourceKey<VillagerProfession> preferred, Set<UUID> skip) {

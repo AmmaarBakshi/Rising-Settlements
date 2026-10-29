@@ -13,10 +13,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -54,8 +54,10 @@ public final class BuildJob {
 	long nextActionTime;
 	long walkStartedAt;
 	int deferrals;
-	/** Villagers that couldn't reach the current spot; they get another chance at the next one. */
-	final Set<UUID> skippedWorkers = new HashSet<>();
+	/** Villagers that got stuck on this job, and the game time until which they are left out. */
+	final Map<UUID, Long> benched = new HashMap<>();
+	/** How often the worker was swapped for the current spot. */
+	int swaps;
 	/** How close the worker has come to the current spot so far. */
 	double closest = Double.MAX_VALUE;
 	/** Where the worker is walking right now (the spot, or a waypoint on the way). */
@@ -115,13 +117,13 @@ public final class BuildJob {
 		queue.poll();
 		done++;
 		deferrals = 0;
-		skippedWorkers.clear();
+		swaps = 0;
 		closest = Double.MAX_VALUE;
 	}
 
 	void skipHead() {
 		queue.poll();
-		skippedWorkers.clear();
+		swaps = 0;
 		closest = Double.MAX_VALUE;
 	}
 

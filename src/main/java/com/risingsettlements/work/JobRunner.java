@@ -23,12 +23,12 @@ public final class JobRunner {
 	/** How often to check that the worker is still heading for the job. */
 	private static final int STEER_INTERVAL = 5;
 	/**
-	 * A villager that couldn't get closer than this before the walk timeout is swapped for
-	 * another one. One that did get this close counts as working on the spot.
+	 * A villager that stops making progress is swapped for another one and left out of
+	 * this job for a minute. Now and then a villager gets stuck on a corner or a plant.
 	 */
-	private static final double NEARBY = 16;
-	/** After this many swaps nobody can get there; the block is placed anyway so the job never gets stuck. */
-	private static final int MAX_SWAPS = 3;
+	private static final int BENCH_TICKS = 1200;
+	/** After this many swaps for one spot nobody can get there; it is placed anyway so the job never gets stuck. */
+	private static final int MAX_SWAPS = 2;
 
 	public enum Status {
 		/** Work is going on (or waiting for the next step). */
@@ -80,9 +80,10 @@ public final class JobRunner {
 			if (walking < RSConfig.get().workerWalkTimeoutTicks) {
 				return Status.WORKING;
 			}
-			if (!Workers.isWithin(worker, next.pos(), NEARBY) && job.skippedWorkers.size() < MAX_SWAPS) {
-				// This villager can't get there (blocked path, fenced in): let someone else try.
-				job.skippedWorkers.add(worker.getUUID());
+			if (job.swaps < MAX_SWAPS) {
+				// This villager can't get there (stuck, blocked path, fenced in): let someone else try.
+				job.benched.put(worker.getUUID(), time + BENCH_TICKS);
+				job.swaps++;
 				Workers.release(level, job.worker);
 				job.worker = null;
 				job.walkTo = null;
