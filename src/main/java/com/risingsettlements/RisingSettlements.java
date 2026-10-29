@@ -7,6 +7,7 @@ import com.risingsettlements.mayor.Reputation;
 import com.risingsettlements.network.MayorNetworking;
 import com.risingsettlements.tracking.PlayerBlockTracker;
 import com.risingsettlements.village.SettlementTicker;
+import com.risingsettlements.work.WorkerTools;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class RisingSettlements implements ModInitializer {
 		Reputation.register();
 		BellInteraction.register();
 		MayorNetworking.register();
+		WorkerTools.register();
 	}
 
 	/** Builds an identifier in the mod's namespace, e.g. {@code rising_settlements:village}. */

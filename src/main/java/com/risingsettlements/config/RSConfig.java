@@ -111,8 +111,13 @@ public final class RSConfig {
 
 	// --- Workers -------------------------------------------------------------------------
 
-	/** If the working villager can't reach a spot in this time, the block is placed anyway. */
+	/**
+	 * If the working villager gets no closer to a spot in this time, another villager takes
+	 * over. After two swaps the block is placed anyway, so a job never gets stuck.
+	 */
 	public int workerWalkTimeoutTicks = 300;
+	/** Working villagers hold a tool that fits the job (only for show; it never drops). */
+	public boolean workersHoldTools = true;
 
 	public static RSConfig get() {
 		return instance;

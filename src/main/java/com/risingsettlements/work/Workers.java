@@ -49,8 +49,11 @@ public final class Workers {
 											 @Nullable ResourceKey<VillagerProfession> preferred) {
 		if (job.worker != null) {
 			Entity entity = level.getEntity(job.worker);
-			if (entity instanceof Villager villager && canWork(villager, settlement)) {
-				return villager;
+			if (entity instanceof Villager villager) {
+				if (canWork(villager, settlement)) {
+					return villager;
+				}
+				WorkerTools.unequip(villager);
 			}
 			job.worker = null;
 		}
@@ -150,6 +153,7 @@ public final class Workers {
 			villager.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 			villager.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
 			villager.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+			WorkerTools.unequip(villager);
 		}
 	}
 }

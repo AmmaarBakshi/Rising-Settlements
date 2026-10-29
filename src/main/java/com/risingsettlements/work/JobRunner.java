@@ -70,6 +70,7 @@ public final class JobRunner {
 		}
 		if (walking % STEER_INTERVAL == 0) {
 			Workers.steer(worker, job.walkTo, next.pos());
+			WorkerTools.equip(worker, job.kind());
 		}
 		if (time < job.nextActionTime) {
 			return Status.WORKING;
