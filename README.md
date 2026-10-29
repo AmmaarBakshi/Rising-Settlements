@@ -18,8 +18,8 @@ Villagers slowly:
 Help a village enough and you can claim its bell to become its **mayor**. As mayor,
 you choose what the village builds next.
 
-> **Status:** early development. The project setup is done, and gameplay features are
-> being added phase by phase. See the [roadmap](#roadmap) for what works today.
+> **Status:** 1.0.0. Every planned feature is in: growth, repairs, reputation and the
+> mayor. See the [changelog](CHANGELOG.md) for what changed in each version.
 
 ---
 
@@ -474,7 +474,7 @@ mod stays safe on dedicated servers.
 - [x] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
 - [x] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
 - [x] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
-- [ ] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
+- [x] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
 
 ## Contributing
 
