@@ -249,7 +249,7 @@ public final class GrowthPlanner {
 						new Building(kind, site.box(), site.entrance(), true));
 			}
 			case FARM -> {
-				FarmPlanner.Plan farm = FarmPlanner.plan(level, settlement, roads, random, SITE_ATTEMPTS);
+				FarmPlanner.Plan farm = FarmPlanner.plan(level, settlement, roads, random, SITE_ATTEMPTS * 2);
 				yield farm == null ? null : new Plan(new BuildJob(kind, farm.placements()),
 						new Building(kind, farm.area(), farm.area().getCenter(), true));
 			}
