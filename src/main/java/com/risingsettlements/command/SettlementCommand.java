@@ -8,11 +8,11 @@ import com.risingsettlements.growth.GrowthPlanner;
 import com.risingsettlements.repair.RepairPlanner;
 import com.risingsettlements.util.Lang;
 import com.risingsettlements.village.GrowthState;
+import com.risingsettlements.village.Leadership;
 import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.SettlementManager;
 import com.risingsettlements.village.VillageDiscovery;
 import com.risingsettlements.work.BuildJob;
-import com.risingsettlements.work.Workers;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -20,6 +20,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jspecify.annotations.Nullable;
 
@@ -38,6 +39,7 @@ import java.util.List;
  *     <li>{@code /settlement grow [project]}: operators. Starts a growth project now, for free.</li>
  *     <li>{@code /settlement pause} and {@code /settlement resume}: operators. Stops or restarts growth.</li>
  *     <li>{@code /settlement cancel}: operators. Stops the current project; placed blocks stay.</li>
+ *     <li>{@code /settlement mayor ...} and {@code /settlement reputation ...}: see {@link MayorCommand}.</li>
  * </ul>
  */
 public final class SettlementCommand {
@@ -72,7 +74,9 @@ public final class SettlementCommand {
 						.executes(context -> setPaused(context, false)))
 				.then(Commands.literal("cancel")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-						.executes(SettlementCommand::cancel)));
+						.executes(SettlementCommand::cancel))
+				.then(MayorCommand.mayor())
+				.then(MayorCommand.reputation()));
 	}
 
 	/** {@code /settlement grow} lets the village choose; {@code /settlement grow <project>} picks one. */
@@ -116,11 +120,7 @@ public final class SettlementCommand {
 		if (settlement == null) {
 			return 0;
 		}
-		settlement.growth().setPaused(paused);
-		BuildJob project = settlement.growth().project();
-		if (paused && project != null) {
-			Workers.release(context.getSource().getLevel(), project.workerId());
-		}
+		GrowthPlanner.setPaused(context.getSource().getLevel(), settlement, paused);
 		context.getSource().sendSuccess(() -> Lang.tr(paused ? "command.pause.result" : "command.resume.result", settlement.name()), true);
 		return 1;
 	}
@@ -145,7 +145,7 @@ public final class SettlementCommand {
 	}
 
 	/** The nearest settlement, or null after telling the player there is none. */
-	private static Settlement nearest(CommandSourceStack source) {
+	static @Nullable Settlement nearest(CommandSourceStack source) {
 		BlockPos pos = BlockPos.containing(source.getPosition());
 		Settlement settlement = SettlementManager.get(source.getLevel()).findNearest(pos, INFO_RANGE);
 		if (settlement == null) {
@@ -170,14 +170,14 @@ public final class SettlementCommand {
 		if (settlement == null) {
 			return 0;
 		}
-		for (Component line : describe(source.getLevel(), settlement, BlockPos.containing(source.getPosition()))) {
+		for (Component line : describe(source.getLevel(), settlement, BlockPos.containing(source.getPosition()), source.getPlayer())) {
 			source.sendSuccess(() -> line, false);
 		}
 		return 1;
 	}
 
-	/** The lines shown by {@code /settlement info}. */
-	public static List<Component> describe(ServerLevel level, Settlement settlement, BlockPos viewer) {
+	/** The lines shown by {@code /settlement info}; {@code player} is the viewer, if it is a player. */
+	public static List<Component> describe(ServerLevel level, Settlement settlement, BlockPos viewer, @Nullable ServerPlayer player) {
 		List<Component> lines = new ArrayList<>();
 		BoundingBox bounds = settlement.bounds();
 		BlockPos bell = settlement.bell();
@@ -189,6 +189,7 @@ public final class SettlementCommand {
 		lines.add(Lang.tr("command.info.border", bounds.getXSpan(), bounds.getZSpan(),
 				bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ()));
 		lines.add(Lang.tr("command.info.population", settlement.villagers(), settlement.beds()));
+		lines.addAll(describeLeadership(settlement, player));
 		lines.add(Lang.tr(settlement.isSurveyed() ? "command.info.blocks" : "command.info.blocks_surveying",
 				settlement.blueprint().size()));
 		lines.add(Lang.tr("command.info.player_blocks", settlement.playerBlockCount()));
@@ -198,6 +199,23 @@ public final class SettlementCommand {
 			lines.add(Lang.tr("command.info.repairing", repairJob.percent()).withStyle(ChatFormatting.GREEN));
 		}
 		lines.addAll(describeGrowth(level, settlement));
+		return lines;
+	}
+
+	/** Who the mayor is, and the viewer's reputation. */
+	private static List<Component> describeLeadership(Settlement settlement, @Nullable ServerPlayer player) {
+		List<Component> lines = new ArrayList<>();
+		RSConfig config = RSConfig.get();
+		if (!config.mayorEnabled) {
+			return lines;
+		}
+		Leadership leadership = settlement.leadership();
+		lines.add(leadership.hasMayor()
+				? Lang.tr("command.info.mayor", leadership.mayorName()).withStyle(ChatFormatting.AQUA)
+				: Lang.tr("command.info.no_mayor", config.mayorReputation));
+		if (player != null) {
+			lines.add(Lang.tr("command.info.reputation", leadership.reputation(player.getUUID())));
+		}
 		return lines;
 	}
 

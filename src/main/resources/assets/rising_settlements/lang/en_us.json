@@ -58,5 +58,22 @@
 	"rising_settlements.mayor.removed": "%s is no longer the mayor of %s (removed by an operator).",
 	"rising_settlements.donate.unwanted": "The villagers have no use for %s. Try building materials, ingots, gems or food.",
 	"rising_settlements.donate.full": "The storehouse of %s is full.",
-	"rising_settlements.donate.thanks": "%s thanks you! +%s resources (now %s)."
+	"rising_settlements.donate.thanks": "%s thanks you! +%s resources (now %s).",
+	"rising_settlements.mayor.bell.mayor": "%s · Mayor: %s",
+	"rising_settlements.mayor.bell.no_mayor": "%s has no mayor · Your reputation: %s/%s",
+	"rising_settlements.mayor.claim.taken": "%s is already the mayor of %s. Your reputation here: %s.",
+	"rising_settlements.mayor.claim.not_enough": "The villagers of %s don't trust you enough yet (%s/%s reputation). Trade with them, defend them from raids or donate at the bell (sneak and use it while holding the items).",
+	"rising_settlements.mayor.disabled": "The mayor system is switched off on this server.",
+	"rising_settlements.mayor.not_mayor": "You aren't the mayor of %s.",
+	"rising_settlements.mayor.too_far": "Go to the bell of %s first.",
+	"rising_settlements.mayor.none": "%s has no mayor.",
+	"rising_settlements.mayor.request.done": "Next project for %s: %s.",
+	"rising_settlements.mayor.request.auto": "%s will choose its own projects again.",
+	"rising_settlements.mayor.no_screen": "Install Rising Settlements on your client to get the mayor screen. Until then: /settlement mayor request <project>, auto, pause, resume or resign.",
+	"rising_settlements.mayor.screen.title": "%s (%s)",
+
+	"rising_settlements.command.info.mayor": "Mayor: %s",
+	"rising_settlements.command.info.no_mayor": "Mayor: none yet (%s reputation needed to claim the bell)",
+	"rising_settlements.command.info.reputation": "Your reputation here: %s",
+	"rising_settlements.command.reputation.result": "Changed the reputation of %s player(s) in %s by %s."
 }

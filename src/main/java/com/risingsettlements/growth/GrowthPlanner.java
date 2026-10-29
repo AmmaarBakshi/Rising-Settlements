@@ -184,6 +184,15 @@ public final class GrowthPlanner {
 		return note(growth, result);
 	}
 
+	/** Pauses or resumes growth. Pausing sends the current worker back to its normal life. */
+	public static void setPaused(ServerLevel level, Settlement settlement, boolean paused) {
+		settlement.growth().setPaused(paused);
+		BuildJob project = settlement.growth().project();
+		if (paused && project != null) {
+			Workers.release(level, project.workerId());
+		}
+	}
+
 	/** Stops the current project (blocks already placed stay). Returns false if there was none. */
 	public static boolean cancel(ServerLevel level, Settlement settlement) {
 		BuildJob project = settlement.growth().project();
