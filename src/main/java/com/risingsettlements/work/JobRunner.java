@@ -18,8 +18,10 @@ import org.jspecify.annotations.Nullable;
  * blocks per second at most.
  */
 public final class JobRunner {
-	/** Check the walking villager's progress once a second. */
+	/** Pick a new waypoint once a second. */
 	private static final int GUIDE_INTERVAL = 20;
+	/** How often to check that the worker is still heading for the job. */
+	private static final int STEER_INTERVAL = 5;
 	/**
 	 * A villager that couldn't get closer than this before the walk timeout is swapped for
 	 * another one. One that did get this close counts as working on the spot.
@@ -63,8 +65,11 @@ public final class JobRunner {
 			job.walkStartedAt = time;
 		}
 		long walking = time - job.walkStartedAt;
-		if (walking % GUIDE_INTERVAL == 0) {
-			Workers.guide(level, worker, next.pos());
+		if (job.walkTo == null || walking % GUIDE_INTERVAL == 0) {
+			job.walkTo = Workers.walkTarget(level, worker, next.pos());
+		}
+		if (walking % STEER_INTERVAL == 0) {
+			Workers.steer(worker, job.walkTo, next.pos());
 		}
 		if (time < job.nextActionTime) {
 			return Status.WORKING;
@@ -80,6 +85,7 @@ public final class JobRunner {
 				job.skippedWorkers.add(worker.getUUID());
 				Workers.release(level, job.worker);
 				job.worker = null;
+				job.walkTo = null;
 				job.walkStartedAt = time;
 				job.closest = Double.MAX_VALUE;
 				return Status.WORKING;
@@ -94,7 +100,8 @@ public final class JobRunner {
 				job.walkStartedAt = time;
 				Placement following = job.peek();
 				if (following != null) {
-					Workers.guide(level, worker, following.pos());
+					job.walkTo = Workers.walkTarget(level, worker, following.pos());
+					Workers.steer(worker, job.walkTo, following.pos());
 				}
 			}
 			case SKIP -> job.skipHead();

@@ -58,6 +58,8 @@ public final class BuildJob {
 	final Set<UUID> skippedWorkers = new HashSet<>();
 	/** How close the worker has come to the current spot so far. */
 	double closest = Double.MAX_VALUE;
+	/** Where the worker is walking right now (the spot, or a waypoint on the way). */
+	@Nullable BlockPos walkTo;
 
 	public BuildJob(Kind kind, Collection<Placement> placements) {
 		this(kind, placements, placements.size(), 0);

@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -89,25 +90,39 @@ public final class Workers {
 				&& settlement.bounds().inflatedBy(16).isInside(villager.blockPosition());
 	}
 
-	/** Tells the villager to walk to a spot (through a waypoint if it is far away) and look at it. */
-	public static void guide(ServerLevel level, Villager villager, BlockPos target) {
-		BlockPos walkTo = target;
+	/** Where the villager should walk to reach {@code target}: the spot itself, or a waypoint towards it. */
+	public static BlockPos walkTarget(ServerLevel level, Villager villager, BlockPos target) {
 		double dx = target.getX() + 0.5 - villager.getX();
 		double dz = target.getZ() + 0.5 - villager.getZ();
 		double distance = Math.sqrt(dx * dx + dz * dz);
-		if (distance > WAYPOINT_DISTANCE) {
-			int x = Mth.floor(villager.getX() + dx / distance * WAYPOINT_DISTANCE);
-			int z = Mth.floor(villager.getZ() + dz / distance * WAYPOINT_DISTANCE);
-			int ground = Terrain.surface(level, x, z);
-			if (ground != Terrain.UNKNOWN) {
-				walkTo = new BlockPos(x, ground + 1, z);
-			}
+		if (distance <= WAYPOINT_DISTANCE) {
+			return target;
+		}
+		int x = Mth.floor(villager.getX() + dx / distance * WAYPOINT_DISTANCE);
+		int z = Mth.floor(villager.getZ() + dz / distance * WAYPOINT_DISTANCE);
+		int ground = Terrain.surface(level, x, z);
+		return ground == Terrain.UNKNOWN ? target : new BlockPos(x, ground + 1, z);
+	}
+
+	/**
+	 * Keeps the villager heading for {@code walkTo} and looking at {@code lookAt}. Some of the
+	 * villager's own habits (strolling back to its workstation, gathering at the bell) replace
+	 * the walk target now and then, so this is called again every few ticks and only steps in
+	 * when the target was changed.
+	 */
+	public static void steer(Villager villager, BlockPos walkTo, BlockPos lookAt) {
+		Brain<?> brain = villager.getBrain();
+		boolean onCourse = brain.getMemory(MemoryModuleType.WALK_TARGET)
+				.map(walk -> walk.getTarget().currentBlockPosition().equals(walkTo))
+				.orElse(false);
+		if (onCourse) {
+			return;
 		}
 		// A villager that is "unable to reach" something for too long forgets its workstation,
 		// so never let our targets count towards that.
-		villager.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-		villager.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(walkTo, WALK_SPEED, CLOSE_ENOUGH));
-		villager.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(target));
+		brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+		brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(walkTo, WALK_SPEED, CLOSE_ENOUGH));
+		brain.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(lookAt));
 	}
 
 	/** Close enough to place a block at {@code pos}. Height doesn't matter much: villagers "reach up". */
