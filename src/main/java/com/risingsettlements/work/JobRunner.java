@@ -20,6 +20,13 @@ import org.jspecify.annotations.Nullable;
 public final class JobRunner {
 	/** Check the walking villager's progress once a second. */
 	private static final int GUIDE_INTERVAL = 20;
+	/**
+	 * A villager that couldn't get closer than this before the walk timeout is swapped for
+	 * another one. One that did get this close counts as working on the spot.
+	 */
+	private static final double NEARBY = 16;
+	/** After this many swaps nobody can get there; the block is placed anyway so the job never gets stuck. */
+	private static final int MAX_SWAPS = 3;
 
 	public enum Status {
 		/** Work is going on (or waiting for the next step). */
@@ -49,17 +56,34 @@ public final class JobRunner {
 		if (job.walkStartedAt == 0) {
 			job.walkStartedAt = time;
 		}
-		if ((time - job.walkStartedAt) % GUIDE_INTERVAL == 0) {
-			Workers.guide(worker, next.pos());
+		// The walk timeout only counts time without progress, so long walks are fine.
+		double distance = Workers.distance(worker, next.pos());
+		if (distance < job.closest - 1) {
+			job.closest = distance;
+			job.walkStartedAt = time;
+		}
+		long walking = time - job.walkStartedAt;
+		if (walking % GUIDE_INTERVAL == 0) {
+			Workers.guide(level, worker, next.pos());
 		}
 		if (time < job.nextActionTime) {
 			return Status.WORKING;
 		}
 
 		boolean arrived = Workers.isNear(worker, next.pos());
-		boolean gaveUpWalking = time - job.walkStartedAt >= RSConfig.get().workerWalkTimeoutTicks;
-		if (!arrived && !gaveUpWalking) {
-			return Status.WORKING;
+		if (!arrived) {
+			if (walking < RSConfig.get().workerWalkTimeoutTicks) {
+				return Status.WORKING;
+			}
+			if (!Workers.isWithin(worker, next.pos(), NEARBY) && job.skippedWorkers.size() < MAX_SWAPS) {
+				// This villager can't get there (blocked path, fenced in): let someone else try.
+				job.skippedWorkers.add(worker.getUUID());
+				Workers.release(level, job.worker);
+				job.worker = null;
+				job.walkStartedAt = time;
+				job.closest = Double.MAX_VALUE;
+				return Status.WORKING;
+			}
 		}
 
 		switch (PlacementRules.check(level, settlement, next)) {
@@ -68,6 +92,10 @@ public final class JobRunner {
 				job.completeHead();
 				job.nextActionTime = time + interval;
 				job.walkStartedAt = time;
+				Placement following = job.peek();
+				if (following != null) {
+					Workers.guide(level, worker, following.pos());
+				}
 			}
 			case SKIP -> job.skipHead();
 			case LATER -> {

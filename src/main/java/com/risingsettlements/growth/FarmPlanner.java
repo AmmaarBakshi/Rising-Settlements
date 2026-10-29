@@ -3,6 +3,7 @@ package com.risingsettlements.growth;
 import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.VillageStyle;
 import com.risingsettlements.work.Placement;
+import com.risingsettlements.world.Terrain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;

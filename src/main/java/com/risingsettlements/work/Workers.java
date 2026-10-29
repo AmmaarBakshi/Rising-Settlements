@@ -1,9 +1,11 @@
 package com.risingsettlements.work;
 
 import com.risingsettlements.village.Settlement;
+import com.risingsettlements.world.Terrain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -15,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,7 +33,12 @@ public final class Workers {
 	/** The villager stops this close to the target. */
 	private static final int CLOSE_ENOUGH = 2;
 	/** Horizontal reach (in blocks) at which a villager can place a block. */
-	private static final double REACH = 4.5;
+	private static final double REACH = 6;
+	/**
+	 * Villagers can only plan a path of about 48 blocks, so longer walks go through
+	 * waypoints this far apart.
+	 */
+	private static final int WAYPOINT_DISTANCE = 24;
 
 	private Workers() {
 	}
@@ -45,18 +53,21 @@ public final class Workers {
 			}
 			job.worker = null;
 		}
-		Villager picked = find(level, settlement, near, preferred);
+		Villager picked = find(level, settlement, near, preferred, job.skippedWorkers);
 		if (picked != null) {
 			job.worker = picked.getUUID();
 		}
 		return picked;
 	}
 
-	/** The nearest villager able to work, preferring the given profession (e.g. farmers for farms). */
+	/**
+	 * The nearest villager able to work, preferring the given profession (e.g. farmers for
+	 * farms), and leaving out villagers that already failed to reach this job.
+	 */
 	public static @Nullable Villager find(ServerLevel level, Settlement settlement, BlockPos near,
-										  @Nullable ResourceKey<VillagerProfession> preferred) {
+										  @Nullable ResourceKey<VillagerProfession> preferred, Set<UUID> skip) {
 		List<Villager> candidates = level.getEntitiesOfClass(Villager.class, AABB.of(settlement.bounds()),
-				villager -> canWork(villager, settlement));
+				villager -> canWork(villager, settlement) && !skip.contains(villager.getUUID()));
 		Comparator<Villager> byDistance = Comparator.comparingDouble(v -> v.distanceToSqr(near.getX(), near.getY(), near.getZ()));
 		if (preferred != null) {
 			Villager match = candidates.stream()
@@ -78,18 +89,42 @@ public final class Workers {
 				&& settlement.bounds().inflatedBy(16).isInside(villager.blockPosition());
 	}
 
-	/** Tells the villager to walk to a spot and look at it. */
-	public static void guide(Villager villager, BlockPos target) {
-		villager.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, WALK_SPEED, CLOSE_ENOUGH));
+	/** Tells the villager to walk to a spot (through a waypoint if it is far away) and look at it. */
+	public static void guide(ServerLevel level, Villager villager, BlockPos target) {
+		BlockPos walkTo = target;
+		double dx = target.getX() + 0.5 - villager.getX();
+		double dz = target.getZ() + 0.5 - villager.getZ();
+		double distance = Math.sqrt(dx * dx + dz * dz);
+		if (distance > WAYPOINT_DISTANCE) {
+			int x = Mth.floor(villager.getX() + dx / distance * WAYPOINT_DISTANCE);
+			int z = Mth.floor(villager.getZ() + dz / distance * WAYPOINT_DISTANCE);
+			int ground = Terrain.surface(level, x, z);
+			if (ground != Terrain.UNKNOWN) {
+				walkTo = new BlockPos(x, ground + 1, z);
+			}
+		}
+		// A villager that is "unable to reach" something for too long forgets its workstation,
+		// so never let our targets count towards that.
+		villager.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+		villager.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(walkTo, WALK_SPEED, CLOSE_ENOUGH));
 		villager.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(target));
 	}
 
 	/** Close enough to place a block at {@code pos}. Height doesn't matter much: villagers "reach up". */
 	public static boolean isNear(Villager villager, BlockPos pos) {
+		return isWithin(villager, pos, REACH) && Math.abs(villager.getY() - pos.getY()) <= 8;
+	}
+
+	/** Horizontal distance check. */
+	public static boolean isWithin(Villager villager, BlockPos pos, double distance) {
+		return distance(villager, pos) <= distance;
+	}
+
+	/** Horizontal distance from the villager to the middle of a block. */
+	public static double distance(Villager villager, BlockPos pos) {
 		double dx = villager.getX() - (pos.getX() + 0.5);
 		double dz = villager.getZ() - (pos.getZ() + 0.5);
-		double dy = Math.abs(villager.getY() - pos.getY());
-		return dx * dx + dz * dz <= REACH * REACH && dy <= 8;
+		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	/** Lets the villager go back to its normal routine. */
@@ -97,6 +132,7 @@ public final class Workers {
 		if (workerId != null && level.getEntity(workerId) instanceof Villager villager) {
 			villager.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 			villager.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+			villager.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
 		}
 	}
 }

@@ -13,8 +13,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -52,6 +54,10 @@ public final class BuildJob {
 	long nextActionTime;
 	long walkStartedAt;
 	int deferrals;
+	/** Villagers that couldn't reach the current spot; they get another chance at the next one. */
+	final Set<UUID> skippedWorkers = new HashSet<>();
+	/** How close the worker has come to the current spot so far. */
+	double closest = Double.MAX_VALUE;
 
 	public BuildJob(Kind kind, Collection<Placement> placements) {
 		this(kind, placements, placements.size(), 0);
@@ -93,6 +99,11 @@ public final class BuildJob {
 		return done;
 	}
 
+	/** Every position this job still has to work on. */
+	public List<BlockPos> positions() {
+		return queue.stream().map(Placement::pos).toList();
+	}
+
 	/** Progress from 0 to 100. */
 	public int percent() {
 		return total == 0 ? 100 : Math.min(100, (total - queue.size()) * 100 / total);
@@ -102,10 +113,14 @@ public final class BuildJob {
 		queue.poll();
 		done++;
 		deferrals = 0;
+		skippedWorkers.clear();
+		closest = Double.MAX_VALUE;
 	}
 
 	void skipHead() {
 		queue.poll();
+		skippedWorkers.clear();
+		closest = Double.MAX_VALUE;
 	}
 
 	/** Moves the next placement to the back of the queue, to try it again later. */

@@ -6,6 +6,7 @@ import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.VillageStyle;
 import com.risingsettlements.work.Placement;
 import com.risingsettlements.world.BlockRules;
+import com.risingsettlements.world.Terrain;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;

@@ -4,6 +4,7 @@ import com.risingsettlements.village.Building;
 import com.risingsettlements.village.Settlement;
 import com.risingsettlements.work.Placement;
 import com.risingsettlements.world.BlockRules;
+import com.risingsettlements.world.Terrain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
