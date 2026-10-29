@@ -39,6 +39,7 @@ import java.util.List;
  *     <li>{@code /settlement grow [project]}: operators. Starts a growth project now, for free.</li>
  *     <li>{@code /settlement pause} and {@code /settlement resume}: operators. Stops or restarts growth.</li>
  *     <li>{@code /settlement cancel}: operators. Stops the current project; placed blocks stay.</li>
+ *     <li>{@code /settlement reload}: operators. Reads the config file again.</li>
  *     <li>{@code /settlement mayor ...} and {@code /settlement reputation ...}: see {@link MayorCommand}.</li>
  * </ul>
  */
@@ -75,6 +76,9 @@ public final class SettlementCommand {
 				.then(Commands.literal("cancel")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.executes(SettlementCommand::cancel))
+				.then(Commands.literal("reload")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.executes(SettlementCommand::reload))
 				.then(MayorCommand.mayor())
 				.then(MayorCommand.reputation()));
 	}
@@ -261,6 +265,12 @@ public final class SettlementCommand {
 			return Lang.tr("growth.note." + parts[0], projectName(kind), GrowthPlanner.cost(kind, RSConfig.get()));
 		}
 		return Lang.tr("growth.note." + note);
+	}
+
+	private static int reload(CommandContext<CommandSourceStack> context) {
+		RSConfig.load();
+		context.getSource().sendSuccess(() -> Lang.tr("command.reload.result"), true);
+		return 1;
 	}
 
 	private static int list(CommandContext<CommandSourceStack> context) {

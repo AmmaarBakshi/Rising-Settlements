@@ -99,5 +99,6 @@
 	"rising_settlements.command.info.mayor": "Mayor: %s",
 	"rising_settlements.command.info.no_mayor": "Mayor: none yet (%s reputation needed to claim the bell)",
 	"rising_settlements.command.info.reputation": "Your reputation here: %s",
-	"rising_settlements.command.reputation.result": "Changed the reputation of %s player(s) in %s by %s."
+	"rising_settlements.command.reputation.result": "Changed the reputation of %s player(s) in %s by %s.",
+	"rising_settlements.command.reload.result": "Reloaded config/rising_settlements.json."
 }
