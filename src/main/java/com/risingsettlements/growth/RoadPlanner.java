@@ -43,10 +43,12 @@ public final class RoadPlanner {
 	/**
 	 * Plans a road from {@code start} to the nearest existing road.
 	 *
-	 * @param avoid extra areas the road must not cross, such as a house that is about to be built
+	 * @param avoid    extra areas the road must not cross, such as a house that is about to be built
+	 * @param fromRoad build it starting at the existing road and working towards {@code start}
 	 * @return the placements (empty if {@code start} already is a road), or null if there is no route
 	 */
-	public static @Nullable List<Placement> connect(ServerLevel level, Settlement settlement, BlockPos start, List<BoundingBox> avoid) {
+	public static @Nullable List<Placement> connect(ServerLevel level, Settlement settlement, BlockPos start,
+			List<BoundingBox> avoid, boolean fromRoad) {
 		Search search = new Search(level, settlement, avoid);
 		int startY = Terrain.surface(level, start.getX(), start.getZ());
 		if (startY == Terrain.UNKNOWN) {
@@ -90,7 +92,8 @@ public final class RoadPlanner {
 					continue;
 				}
 				if (search.isRoad(nx, ny, nz)) {
-					return search.build(path(parent, height, current));
+					List<BlockPos> path = path(parent, height, current);
+					return search.build(fromRoad ? path.reversed() : path);
 				}
 				if (search.isWalkable(nx, ny, nz)) {
 					parent.put(next, current);
@@ -104,8 +107,9 @@ public final class RoadPlanner {
 	}
 
 	/**
-	 * Plans a road that reaches further out: from a random spot just beyond the village's
-	 * current roads back to the nearest road.
+	 * Plans a road that reaches further out: from the nearest road to a random spot just
+	 * beyond the village's current roads. It is built from the road outwards, so the
+	 * villager doing it walks along with the new road.
 	 */
 	public static @Nullable List<Placement> extend(ServerLevel level, Settlement settlement, List<BlockPos> roads,
 			RandomSource random, int attempts) {
@@ -120,7 +124,7 @@ public final class RoadPlanner {
 			double angle = random.nextDouble() * Math.PI * 2;
 			BlockPos target = new BlockPos(bell.getX() + Mth.floor(Math.cos(angle) * distance), 0,
 					bell.getZ() + Mth.floor(Math.sin(angle) * distance));
-			List<Placement> road = connect(level, settlement, target, List.of());
+			List<Placement> road = connect(level, settlement, target, List.of(), true);
 			if (road != null && road.size() >= 8) {
 				return road;
 			}

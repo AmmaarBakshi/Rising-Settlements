@@ -89,6 +89,21 @@ public final class Settlement {
 		markDirty();
 	}
 
+	/**
+	 * Widens the border so it covers a new building plus a margin, but never further than
+	 * {@code maxRadius} from the bell.
+	 */
+	public void growBounds(BoundingBox area, int margin, int maxRadius) {
+		BoundingBox grown = BoundingBox.encapsulating(bounds, area.inflatedBy(margin));
+		setBounds(new BoundingBox(
+				Math.max(grown.minX(), bell.getX() - maxRadius),
+				grown.minY(),
+				Math.max(grown.minZ(), bell.getZ() - maxRadius),
+				Math.min(grown.maxX(), bell.getX() + maxRadius),
+				grown.maxY(),
+				Math.min(grown.maxZ(), bell.getZ() + maxRadius)));
+	}
+
 	public VillageStyle style() {
 		return style;
 	}

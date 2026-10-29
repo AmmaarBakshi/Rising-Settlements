@@ -19,4 +19,6 @@ public final class SettlementRuntime {
 
 	/** The current repair job, if villagers are repairing. Takes priority over building. */
 	public @Nullable BuildJob repairJob;
+	/** Growth searches in a row that found no room for the wanted project. */
+	public int failedSearches;
 }

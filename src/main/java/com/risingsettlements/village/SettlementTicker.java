@@ -1,6 +1,7 @@
 package com.risingsettlements.village;
 
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.growth.GrowthPlanner;
 import com.risingsettlements.repair.RepairPlanner;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
@@ -32,6 +33,7 @@ public final class SettlementTicker {
 			}
 			VillageSurvey.tickSettlement(level, settlement, config.surveyBlocksPerTick);
 			RepairPlanner.tick(level, settlement, time);
+			GrowthPlanner.tick(level, settlement, time);
 			if (isTurn(settlement, time, config.censusIntervalTicks)) {
 				VillageCensus.run(level, settlement);
 			}
@@ -39,7 +41,7 @@ public final class SettlementTicker {
 	}
 
 	/** True once every {@code interval} ticks, at a different tick for each settlement. */
-	static boolean isTurn(Settlement settlement, long time, int interval) {
+	public static boolean isTurn(Settlement settlement, long time, int interval) {
 		long offset = Math.floorMod(settlement.id().getLeastSignificantBits(), interval);
 		return (time + offset) % interval == 0;
 	}

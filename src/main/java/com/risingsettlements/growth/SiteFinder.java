@@ -6,9 +6,11 @@ import com.risingsettlements.village.Settlement;
 import com.risingsettlements.village.VillageStyle;
 import com.risingsettlements.world.BlockRules;
 import com.risingsettlements.world.Terrain;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,7 +53,8 @@ public final class SiteFinder {
 	}
 
 	/**
-	 * Tries a few random spots next to the village's roads, with the door facing the road.
+	 * Tries random spots: half of them right beside a road with the door facing it, the
+	 * other half anywhere open in the village area with the door facing the bell.
 	 *
 	 * @param tolerance how uneven the ground may be (in blocks)
 	 * @param margin    free border to keep around the building
@@ -59,10 +62,36 @@ public final class SiteFinder {
 	public static @Nullable Site findForTemplate(ServerLevel level, Settlement settlement, TemplateShape shape,
 			List<BlockPos> roads, RandomSource random, int attempts, int tolerance, int margin) {
 		BlockPos entranceLocal = shape.entrance();
+		LongOpenHashSet roadColumns = new LongOpenHashSet();
+		for (BlockPos road : roads) {
+			roadColumns.add(column(road.getX(), road.getZ()));
+		}
 		for (int i = 0; i < attempts; i++) {
-			BlockPos road = pickRoad(settlement, roads, random);
-			Direction away = Direction.Plane.HORIZONTAL.getRandomDirection(random);
-			BlockPos entrance = road.relative(away, 2 + random.nextInt(3));
+			BlockPos entrance;
+			Direction away;
+			if (i % 2 == 0 || roads.isEmpty()) {
+				// Somewhere open in the village area, with the door facing the bell. A new road
+				// will lead to it.
+				BlockPos bell = settlement.bell();
+				double angle = random.nextDouble() * Math.PI * 2;
+				double distance = 12 + random.nextDouble() * Math.max(1, RSConfig.get().maxVillageRadius - 28);
+				int dx = Mth.floor(Math.cos(angle) * distance);
+				int dz = Mth.floor(Math.sin(angle) * distance);
+				entrance = bell.offset(dx, 0, dz);
+				away = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? Direction.EAST : Direction.WEST) : (dz > 0 ? Direction.SOUTH : Direction.NORTH);
+			} else {
+				// Beside a road: walk off the side of the road, so the house doesn't stand on it.
+				BlockPos road = pickRoad(settlement, roads, random);
+				away = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+				int edge = 1;
+				while (edge <= 3 && roadColumns.contains(column(road.getX() + away.getStepX() * edge, road.getZ() + away.getStepZ() * edge))) {
+					edge++;
+				}
+				if (edge > 3) {
+					continue;
+				}
+				entrance = road.relative(away, edge + random.nextInt(2));
+			}
 			Rotation rotation = facing(away.getOpposite());
 
 			BlockPos origin = entrance.subtract(TemplateShape.rotate(entranceLocal, rotation)).atY(0);
@@ -81,7 +110,10 @@ public final class SiteFinder {
 		return null;
 	}
 
-	/** Picks a road block to build next to, preferring ones close to the bell. */
+	/**
+	 * Picks a road block to build next to. Of two random ones, the one further from the
+	 * bell wins: the middle of a village is usually full, and villages grow outwards.
+	 */
 	private static BlockPos pickRoad(Settlement settlement, List<BlockPos> roads, RandomSource random) {
 		if (roads.isEmpty()) {
 			return settlement.bell();
@@ -89,7 +121,11 @@ public final class SiteFinder {
 		BlockPos a = roads.get(random.nextInt(roads.size()));
 		BlockPos b = roads.get(random.nextInt(roads.size()));
 		BlockPos bell = settlement.bell();
-		return a.distSqr(bell) <= b.distSqr(bell) ? a : b;
+		return a.distSqr(bell) >= b.distSqr(bell) ? a : b;
+	}
+
+	private static long column(int x, int z) {
+		return ((long) x << 32) | (z & 0xFFFFFFFFL);
 	}
 
 	/** The rotation that turns a north-facing template so its front faces {@code front}. */
