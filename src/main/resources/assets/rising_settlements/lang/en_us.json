@@ -18,5 +18,34 @@
 	"rising_settlements.command.repair.result": "%s: %s damaged blocks will be repaired right away.",
 	"rising_settlements.command.list.header": "Known villages in this dimension: %s",
 	"rising_settlements.command.list.entry": "- %s (%s) at %s %s %s, %s villagers",
-	"rising_settlements.command.scan.result": "Found %s new village(s) nearby."
+	"rising_settlements.command.scan.result": "Found %s new village(s) nearby.",
+
+	"rising_settlements.project.house": "house",
+	"rising_settlements.project.farm": "farm",
+	"rising_settlements.project.road": "road",
+	"rising_settlements.project.well": "well",
+	"rising_settlements.project.lamps": "lamp posts",
+	"rising_settlements.project.wall": "wall",
+	"rising_settlements.project.repair": "repairs",
+
+	"rising_settlements.command.info.growth_disabled": "Growth is switched off on this server.",
+	"rising_settlements.command.info.resources": "Resources: %s (+%s per day)",
+	"rising_settlements.command.info.project": "Building: %s (%s%% done)",
+	"rising_settlements.command.info.next_project": "Next project: in about %s minutes",
+	"rising_settlements.command.info.paused": "Growth is paused.",
+	"rising_settlements.command.info.built": "Built so far: %s houses, %s farms, %s roads, %s wells, %s lamp projects, %s walls",
+	"rising_settlements.growth.note.saving_up": "Saving up for: %s (needs %s resources).",
+	"rising_settlements.growth.note.no_space": "Couldn't find a good spot for: %s.",
+	"rising_settlements.growth.note.fully_grown": "This village has everything it wants right now.",
+	"rising_settlements.growth.note.not_allowed": "Waiting for villagers to move in.",
+
+	"rising_settlements.command.grow.started": "%s started building: %s (%s blocks).",
+	"rising_settlements.command.grow.busy": "%s is already building: %s (%s%% done).",
+	"rising_settlements.command.grow.no_space": "%s couldn't find a good spot for: %s.",
+	"rising_settlements.command.grow.fully_grown": "%s has everything it wants right now. Name a project to build one anyway.",
+	"rising_settlements.command.grow.not_allowed": "That project is switched off in the config.",
+	"rising_settlements.command.pause.result": "Growth in %s is paused.",
+	"rising_settlements.command.resume.result": "Growth in %s continues.",
+	"rising_settlements.command.cancel.result": "%s stopped its current project. Blocks already placed stay.",
+	"rising_settlements.command.cancel.none": "%s isn't building anything right now."
 }
