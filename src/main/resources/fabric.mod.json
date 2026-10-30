@@ -13,6 +13,7 @@
 		"issues": "https://github.com/AmmaarBakshi/Rising-Settlements/issues"
 	},
 	"license": "MIT",
+	"icon": "assets/rising_settlements/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -22,6 +23,9 @@
 			"com.risingsettlements.client.RisingSettlementsClient"
 		]
 	},
+	"mixins": [
+		"rising_settlements.mixins.json"
+	],
 	"depends": {
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~26.3",

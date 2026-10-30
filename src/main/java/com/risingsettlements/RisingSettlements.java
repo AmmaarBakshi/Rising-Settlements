@@ -1,7 +1,11 @@
 package com.risingsettlements;
 
+import com.risingsettlements.command.SettlementCommand;
 import com.risingsettlements.config.RSConfig;
+import com.risingsettlements.mayor.MayorOffice;
+import com.risingsettlements.util.Texts;
 import com.risingsettlements.village.SettlementTicker;
+import com.risingsettlements.world.PlayerBlockTracker;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -24,7 +28,11 @@ public class RisingSettlements implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Rising Settlements is loading. Villages will start to grow.");
 		RSConfig.load();
+		Texts.load();
 		SettlementTicker.register();
+		PlayerBlockTracker.register();
+		MayorOffice.register();
+		SettlementCommand.register();
 	}
 
 	/** Builds an identifier in the mod's namespace, e.g. {@code rising_settlements:village}. */

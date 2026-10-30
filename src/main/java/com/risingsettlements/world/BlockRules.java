@@ -10,8 +10,9 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * <p>Together with the player-block tracking these rules implement the mod's most
  * important promise: <b>player builds are never touched</b>. The mod only ever changes a
- * position when it is empty, holds loose natural vegetation, or is part of the village's
- * own blueprint, and never when a player placed a block there.
+ * position when it is empty, holds loose natural vegetation, is part of the village's own
+ * blueprint, or (for foundations, roads and fields) is natural ground at the surface. It
+ * never changes a position where a player placed or broke a block.
  */
 public final class BlockRules {
 	private BlockRules() {
@@ -77,5 +78,27 @@ public final class BlockRules {
 	/** Blocks that a village records in its blueprint when it is first found. */
 	public static boolean isVillageBlock(BlockState state) {
 		return !isNatural(state) && !state.is(Blocks.STRUCTURE_VOID) && !state.is(Blocks.JIGSAW);
+	}
+
+	/** Village streets. New houses connect to these, and new streets grow from their ends. */
+	public static boolean isRoad(BlockState state) {
+		return state.is(Blocks.DIRT_PATH);
+	}
+
+	/** Natural soil that farmers may till into farmland. */
+	public static boolean isTillable(BlockState state) {
+		return state.is(Blocks.DIRT) || state.is(Blocks.GRASS_BLOCK);
+	}
+
+	/**
+	 * Village blocks that wear down on their own: farmland trampled into dirt by mobs, paths
+	 * turned to dirt by something placed on top, field water frozen into ice. Villagers
+	 * restore them like missing blocks.
+	 */
+	public static boolean isWornDown(BlockState current, BlockState wanted) {
+		if (current.is(Blocks.DIRT)) {
+			return wanted.is(Blocks.FARMLAND) || wanted.is(Blocks.DIRT_PATH);
+		}
+		return current.is(Blocks.ICE) && wanted.is(Blocks.WATER);
 	}
 }

@@ -1,5 +1,7 @@
 package com.risingsettlements.village;
 
+import com.risingsettlements.build.ConstructionWorker;
+import com.risingsettlements.build.GrowthPlanner;
 import com.risingsettlements.config.RSConfig;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
@@ -29,6 +31,13 @@ public final class SettlementTicker {
 				continue;
 			}
 			VillageSurvey.tickSettlement(level, settlement, config.surveyBlocksPerTick);
+			if ((level.getGameTime() + settlement.id().hashCode()) % config.censusIntervalTicks == 0) {
+				Census.run(level, settlement);
+			}
+			settlement.runtime().repairs.tick(level, settlement);
+			GrowthPlanner.tick(level, settlement);
+			ConstructionWorker.tick(level, settlement);
+			WorkerVillagers.tick(level, settlement);
 		}
 	}
 }
