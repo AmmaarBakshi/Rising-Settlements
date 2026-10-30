@@ -1,6 +1,9 @@
 package com.risingsettlements.village;
 
+import com.risingsettlements.repair.RepairWorker;
 import org.jspecify.annotations.Nullable;
+
+import java.util.UUID;
 
 /**
  * Work-in-progress state of a settlement that does not need to be saved.
@@ -11,4 +14,9 @@ import org.jspecify.annotations.Nullable;
 public final class SettlementRuntime {
 	/** Recording of the original village blocks, while it is running. */
 	@Nullable VillageSurvey survey;
+	/** Finds and rebuilds missing village blocks. */
+	public final RepairWorker repairs = new RepairWorker();
+	/** The villager currently shown doing the work, and when it may stop. */
+	@Nullable UUID worker;
+	long workerUntil;
 }

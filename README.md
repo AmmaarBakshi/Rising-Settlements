@@ -18,8 +18,7 @@ Villagers slowly:
 Help a village enough and you can claim its bell to become its **mayor**. As mayor,
 you choose what the village builds next.
 
-> **Status:** early development. The project setup is done, and gameplay features are
-> being added phase by phase. See the [roadmap](#roadmap) for what works today.
+> **Status:** all planned features are in (version 0.1.0). See the [roadmap](#roadmap).
 
 ---
 
@@ -27,6 +26,9 @@ you choose what the village builds next.
 
 - [Features](#features)
 - [Design rules](#design-rules)
+- [How to play](#how-to-play)
+- [Commands](#commands)
+- [Configuration](#configuration)
 - [Installation (players)](#installation-players)
 - [Building from source (developers)](#building-from-source-developers)
 - [Project structure](#project-structure)
@@ -38,13 +40,13 @@ you choose what the village builds next.
 
 | Feature | What it does | Status |
 |---|---|---|
-| Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. | Planned |
-| Repairs | Villagers rebuild blocks lost to raids, explosions and fire. | Planned |
-| Farms | Farmers widen fields and start new ones nearby. | Planned |
-| Roads | Paths grow to reach new buildings. | Planned |
-| Houses | New biome-styled houses go up a few blocks at a time. | Planned |
-| Mayor | Earn reputation, claim the bell, choose the next project. | Planned |
-| Config | Growth speed, max village size, each feature on or off. | Planned |
+| Village tracking | Finds villages by their bell and remembers their borders, villagers, biome style and blocks. | Done |
+| Repairs | Villagers rebuild blocks lost to raids, explosions and fire. | Done |
+| Farms | Farmers widen fields and start new ones nearby. | Done |
+| Roads | Paths grow to reach new buildings. | Done |
+| Houses | New biome-styled houses go up a few blocks at a time. | Done |
+| Mayor | Earn reputation, claim the bell, choose the next project. | Done |
+| Config | Growth speed, max village size, each feature on or off. | Done |
 
 ## Design rules
 
@@ -64,6 +66,102 @@ The mod follows these rules everywhere:
    savanna, taiga or snowy).
 7. **Vanilla blocks only.** The mod uses vanilla blocks such as the bell, so removing it
    does not break your world.
+
+## How to play
+
+**Finding villages.** Walk into any generated village. Within a few seconds the mod finds its
+bell, gives the village a name (such as *Willowbrook*) and quietly records every block of the
+original village. Run `/settlement info` while standing in it to see how it is doing.
+
+**Repairs.** About once a minute, villagers look for village blocks that have gone missing:
+blown up by creepers, burned, smashed in a raid. They put them back from the bottom up, one
+block every second, with a little sparkle and the block's placing sound. Trampled farmland
+and paths are restored too. Repairs wait while a raid is going on and need at least one
+villager.
+
+**Growth.** Once per in-game day (by default) a village with at least two villagers starts a
+new project, based on what it needs:
+
+- **Houses** when there are not enough beds. A house is a small building in the village's
+  style (plains, desert, savanna, taiga or snowy) with a bed, a job site block, a torch,
+  windows and a door facing a street. A path is laid from the door to the street.
+- **Farms** when there is not enough farmland. Farmers first widen an existing field next to
+  water; if that is not possible, they lay out a new 9×9 field with a water source in the
+  middle.
+- **Roads** when the village has everything it needs, so that future houses have somewhere
+  to go. New streets lead outwards from the edge of the village.
+
+Projects are built a block at a time. The nearest villager walks over and holds a tool while
+it works. The village border grows to include each finished project, up to a maximum radius
+around the bell.
+
+**Your builds are safe.** Every block a player places or breaks near a village is remembered,
+and the mod never repairs, replaces or builds over those positions. Villages only build on
+empty space, loose plants and natural ground.
+
+**Becoming mayor.** Raise your reputation with a village the vanilla way: trade with its
+villagers, cure zombie villagers, defend it in raids. When the total reputation is high
+enough (30 by default, check it with `/settlement info`), **sneak and use the bell with an
+empty hand** to claim it. As mayor, do the same to open the mayor screen, where you can:
+
+- pick what the village builds next (house, farm, road, or let the village decide),
+- pause and resume growth (repairs carry on while growth is paused),
+- resign.
+
+A village has one mayor at a time. Players without the mod on their client get the same
+choices as clickable buttons in chat.
+
+## Commands
+
+| Command | Who | What it does |
+|---|---|---|
+| `/settlement info` | everyone | Status of the village you are in (or the nearest one): villagers, beds, projects, repairs, mayor, your reputation. |
+| `/settlement list` | everyone | All known villages in this dimension. |
+| `/settlement mayor claim` | everyone | Claim the bell, same as sneak-using it. |
+| `/settlement menu` | mayor | Open the mayor screen (or chat menu). |
+| `/settlement project <auto\|house\|farm\|road>` | mayor | Choose the next project. |
+| `/settlement pause` / `resume` | mayor | Pause or resume growth. |
+| `/settlement mayor resign` | mayor | Give up the bell. |
+| `/settlement scan` | operator | Look for villages around you right now. |
+| `/settlement grow` | operator | Start the next project immediately. |
+| `/settlement repair` | operator | Look for damage right now. |
+| `/settlement mayor clear` | operator | Remove the village's mayor. |
+| `/settlement forget` | operator | Forget the village. Its blocks stay; it is found again as a new village. |
+
+Operators may also use the mayor commands on any village.
+
+## Configuration
+
+Settings live in `config/rising_settlements.json` and are created with defaults the first
+time the game starts. Times are in game ticks (20 ticks = 1 second, 24000 = one in-game
+day). Restart the game or server after changing the file.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `enableRepairs`, `enableFarms`, `enableRoads`, `enableHouses`, `enableMayor` | `true` | Turn each feature on or off. |
+| `villagersHoldTools` | `true` | Villagers walk to the work and hold a tool. |
+| `effects` | `true` | Particles and sounds when blocks are placed. |
+| `growthIntervalTicks` | `24000` | Time between projects. |
+| `buildIntervalTicks` / `buildBlocksPerStep` | `20` / `1` | Building speed: blocks placed per interval. |
+| `minVillagersToGrow` | `2` | Villagers needed before a village grows. |
+| `maxHousesPerVillage` | `10` | The most houses the mod adds to one village. |
+| `farmlandPerVillager` | `10` | Farmland a village wants per villager. |
+| `farmExtendBlocks` | `12` | How much an existing field may grow per project. |
+| `maxVillageRadius` | `96` | How far from the bell a village may spread (and how far player blocks are tracked). |
+| `repairScanIntervalTicks` | `1200` | How often villages look for damage. |
+| `repairIntervalTicks` / `repairBlocksPerStep` | `20` / `1` | Repair speed. |
+| `mayorReputation` | `30` | Reputation needed to claim a bell. |
+| `discoveryRadius`, `discoveryIntervalTicks`, `villageMargin`, `surveyBlocksPerTick`, `repairScanBlocksPerTick`, `censusIntervalTicks` | | Fine tuning for performance. |
+
+Values outside sensible ranges are clamped, so a typo cannot freeze the server.
+
+## Removing the mod
+
+Everything the mod builds is made of vanilla blocks, so removing the mod leaves every house,
+field and road in place. Its saved data
+(`<world>/dimensions/<dimension>/data/rising_settlements/settlements.dat`) is simply
+ignored. Any villager caught holding a work tool at the moment the world was saved keeps it
+as a harmless item in its hand.
 
 ## Installation (players)
 
@@ -119,8 +217,10 @@ in `.minecraft/logs/latest.log`:
 
 ### Multiplayer
 
-Install the mod and Fabric API on the **server and on every client**. The server runs
-all village logic. Clients need the mod for the mayor screen and visual effects.
+Install the mod and Fabric API on the **server**; it runs all village logic. Installing it on
+clients too is recommended: it adds the mayor screen and translated text. Players with a
+vanilla client can still join, see villages grow, and manage a village through clickable
+chat buttons instead of the screen.
 
 ## Building from source (developers)
 
@@ -167,15 +267,45 @@ To update, look up new versions at <https://fabricmc.net/develop>.
 
 ```
 src/
-├── main/                     Common + server code (runs on the logical server)
+├── main/                          Common + server code (runs on the logical server)
 │   ├── java/com/risingsettlements/
-│   │   └── RisingSettlements.java       Mod entry point
+│   │   ├── RisingSettlements.java     Mod entry point
+│   │   ├── config/                    JSON config file
+│   │   ├── village/                   Settlements, discovery, survey, census, saving, ticking
+│   │   ├── repair/                    Finding and rebuilding missing blocks
+│   │   ├── build/                     Growth: house, farm and road planners, build plans
+│   │   ├── mayor/                     Reputation, claiming the bell, mayor choices
+│   │   ├── network/                   Packets for the mayor screen
+│   │   ├── command/                   /settlement
+│   │   ├── world/                     Block rules, player-block tracking, effects
+│   │   ├── mixin/                     Hook that reports player block placement
+│   │   └── util/                      Translatable text
 │   └── resources/
-│       └── fabric.mod.json              Mod metadata for Fabric Loader
-└── client/                   Client-only code (screens, visuals)
+│       ├── fabric.mod.json            Mod metadata for Fabric Loader
+│       ├── rising_settlements.mixins.json
+│       └── assets/rising_settlements/ Icon and language file
+└── client/                        Client-only code (screens, visuals)
     └── java/com/risingsettlements/client/
-        └── RisingSettlementsClient.java Client entry point
+        ├── RisingSettlementsClient.java Client entry point
+        └── MayorScreen.java             The mayor screen
 ```
+
+### How it works
+
+- **Discovery.** Bells are "meeting" points of interest, so the game already knows where they
+  are. Every few seconds the mod looks through the points of interest in loaded chunks near
+  players. A bell inside a generated village structure becomes a settlement.
+- **Blueprint.** The blocks inside the village's structure pieces are recorded once, a slice
+  per tick. The blueprint is the only set of blocks the mod ever repairs; everything the mod
+  builds is added to it.
+- **Player blocks.** A mixin on `BlockItem#place` and Fabric's block-break event record every
+  position a player touches near a village. Those positions are never changed.
+- **Build plans.** Planners turn a project into an ordered list of placements (foundation
+  first, roof last). The list is saved with the world, so a half-built house is finished
+  after a restart. Each placement is checked against the world just before it happens.
+- **Performance.** All work is spread out: surveys, damage scans and builds handle a bounded
+  number of blocks per tick, only in loaded chunks, and each village gets its turn on a
+  different tick.
 
 The `main` and `client` source sets are kept apart on purpose (Loom's
 `splitEnvironmentSourceSets`). Code in `main` cannot use client classes by accident, so the
@@ -184,11 +314,14 @@ mod stays safe on dedicated servers.
 ## Roadmap
 
 - [x] **Phase 0: Setup.** Fabric project, Gradle wrapper, CI build.
-- [ ] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
-- [ ] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
-- [ ] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
-- [ ] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
-- [ ] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
+- [x] **Phase 1: Village tracking.** Find villages by their bell, save village data, track player-placed blocks, `/settlement info`.
+- [x] **Phase 2: Repairs.** Blueprint each village; villagers rebuild missing blocks with particles and sound.
+- [x] **Phase 3: Growth.** Farms, roads and biome-styled houses built a few blocks at a time.
+- [x] **Phase 4: Mayor system.** Reputation, claiming the bell, choosing projects, pausing growth.
+- [x] **Phase 5: Polish.** Config file, villagers holding tools, language file, icon, safe removal.
+
+Ideas for later: more house designs per style, villagers decorating their streets with lamps
+and benches, and trading discounts for the mayor.
 
 ## Contributing
 

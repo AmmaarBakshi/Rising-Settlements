@@ -3,6 +3,7 @@ package com.risingsettlements.village;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.risingsettlements.RisingSettlements;
+import com.risingsettlements.config.RSConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -93,6 +94,15 @@ public final class SettlementManager extends SavedData {
 			}
 		}
 		return best;
+	}
+
+	/**
+	 * The settlement a player standing at {@code pos} most likely means: the one they are
+	 * inside, or else the one with the closest bell within the maximum village radius.
+	 */
+	public @Nullable Settlement findFor(BlockPos pos) {
+		Settlement inside = findContaining(pos);
+		return inside != null ? inside : findNearest(pos, RSConfig.get().maxVillageRadius);
 	}
 
 	/** All settlements within {@code radius} blocks (horizontally) of a position. */

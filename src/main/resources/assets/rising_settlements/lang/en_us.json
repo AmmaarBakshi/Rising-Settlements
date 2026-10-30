@@ -1,0 +1,67 @@
+{
+	"rising_settlements.style.plains": "Plains",
+	"rising_settlements.style.desert": "Desert",
+	"rising_settlements.style.savanna": "Savanna",
+	"rising_settlements.style.taiga": "Taiga",
+	"rising_settlements.style.snowy": "Snowy",
+
+	"rising_settlements.project.auto": "Village decides",
+	"rising_settlements.project.house": "House",
+	"rising_settlements.project.farm": "Farm",
+	"rising_settlements.project.road": "Road",
+
+	"rising_settlements.command.none_nearby": "There is no known village near you. Walk into a village with a bell and wait a few seconds.",
+
+	"rising_settlements.info.header": "%s (%s village, bell at %s)",
+	"rising_settlements.info.population": "Villagers: %s   Beds: %s",
+	"rising_settlements.info.blocks": "Village blocks: %s   Player blocks protected: %s",
+	"rising_settlements.info.surveying": "Recording the village's blocks... (%s so far)",
+	"rising_settlements.info.built": "Built so far: %s houses, %s farms, %s roads. Farmland: %s",
+	"rising_settlements.info.building": "Building: %s (%s%%)",
+	"rising_settlements.info.paused": "Growth is paused by the mayor.",
+	"rising_settlements.info.too_few": "Too few villagers to grow (needs %s).",
+	"rising_settlements.info.next": "Next project: %s in %s",
+	"rising_settlements.info.repairs": "Blocks waiting for repair: %s",
+	"rising_settlements.info.mayor": "Mayor: %s",
+	"rising_settlements.info.no_mayor": "No mayor yet. Sneak and use the bell with an empty hand to claim it.",
+	"rising_settlements.info.reputation": "Your reputation here: %s (a mayor needs %s)",
+
+	"rising_settlements.list.empty": "No villages have been found in this dimension yet.",
+	"rising_settlements.list.header": "%s known villages:",
+	"rising_settlements.list.entry": "- %s (%s) at %s, %s villagers, mayor: %s",
+
+	"rising_settlements.mayor.disabled": "The mayor system is turned off on this server.",
+	"rising_settlements.mayor.already": "You are already the mayor of %s.",
+	"rising_settlements.mayor.taken": "%s already has a mayor: %s.",
+	"rising_settlements.mayor.not_enough": "The villagers of %s don't trust you enough yet (reputation %s of %s). Trade with them, cure zombie villagers or defend them from raids.",
+	"rising_settlements.mayor.claimed": "You are now the mayor of %s! Sneak and use the bell to manage the village.",
+	"rising_settlements.mayor.not_mayor": "Only the mayor of %s can do that.",
+	"rising_settlements.mayor.project_set": "%s will build next: %s",
+	"rising_settlements.mayor.paused": "%s will stop growing until you resume it. Repairs continue.",
+	"rising_settlements.mayor.resumed": "%s is growing again.",
+	"rising_settlements.mayor.resigned": "You are no longer the mayor of %s.",
+
+	"rising_settlements.menu.header": "Mayor of %s",
+	"rising_settlements.menu.projects": "Next project:",
+	"rising_settlements.menu.pause": "Pause growth",
+	"rising_settlements.menu.resume": "Resume growth",
+	"rising_settlements.menu.info": "Info",
+	"rising_settlements.menu.resign": "Resign",
+
+	"rising_settlements.screen.title": "Mayor of %s",
+	"rising_settlements.screen.stats": "Houses built: %s   Farmland: %s   Village blocks: %s",
+	"rising_settlements.screen.choose": "What should the village build next?",
+	"rising_settlements.screen.close": "Close",
+
+	"rising_settlements.growth.started": "%s has started building: %s",
+	"rising_settlements.growth.finished": "%s has finished building: %s",
+
+	"rising_settlements.admin.mayor_cleared": "%s no longer has a mayor.",
+	"rising_settlements.admin.scanned": "Found %s new villages.",
+	"rising_settlements.admin.not_surveyed": "%s is still recording its blocks. Try again in a moment.",
+	"rising_settlements.admin.busy": "%s is already building: %s",
+	"rising_settlements.admin.no_site": "%s could not find a place to build right now.",
+	"rising_settlements.admin.growing": "%s started building: %s (%s blocks)",
+	"rising_settlements.admin.repair": "%s will look for damage now.",
+	"rising_settlements.admin.forgotten": "%s was forgotten. Its blocks stay in the world; it will be found again as a new village."
+}
